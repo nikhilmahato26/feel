@@ -16,7 +16,7 @@ interface MapProps {
 
 export function WorldMap({
   dots = [],
-  lineColor = "var(--accent)",
+  lineColor = "var(--map-arc)",
   showLabels = true,
   animationDuration = 2,
   loop = true,
@@ -55,6 +55,32 @@ export function WorldMap({
   const totalAnimationTime = dots.length * staggerDelay + animationDuration;
   const pauseTime = 2; // Pause for 2 seconds when all paths are drawn
   const fullCycleDuration = totalAnimationTime + pauseTime;
+
+  // Several arcs share one origin, so drawing markers per-arc stacked five
+  // copies of the HQ pin, its pulse and its label on top of each other. Collapse
+  // to unique locations, then nudge any label that would collide with one
+  // already placed (New Delhi and UAE sit close enough to overlap).
+  const locations: Array<{ x: number; y: number; label: string; labelY: number; i: number }> = [];
+  const seen = new Set<string>();
+  const placed: Array<{ x: number; y: number }> = [];
+
+  dots.forEach((dot) => {
+    [dot.start, dot.end].forEach((point) => {
+      if (!point.label || seen.has(point.label)) return;
+      seen.add(point.label);
+
+      const { x, y } = projectPoint(point.lat, point.lng);
+      const collides = (candidate: number) =>
+        placed.some((b) => Math.abs(b.x - x) < 92 && Math.abs(b.y - candidate) < 27);
+
+      let labelY = y - 35; // above the pin by default
+      if (collides(labelY)) labelY = y + 11; // flip below
+      if (collides(labelY)) labelY = y - 64; // otherwise stack clear
+
+      placed.push({ x, y: labelY });
+      locations.push({ x, y, label: point.label, labelY, i: locations.length });
+    });
+  });
 
   return (
     <div className="w-full aspect-[2/1] md:aspect-[2.5/1] lg:aspect-[2/1] bg-(--bg) rounded-3xl relative font-sans overflow-hidden border border-(--border) shadow-(--shadow-sm)">
@@ -156,96 +182,62 @@ export function WorldMap({
           );
         })}
 
-        {dots.map((dot, i) => {
-          const startPoint = projectPoint(dot.start.lat, dot.start.lng);
-          const endPoint = projectPoint(dot.end.lat, dot.end.lng);
+        {locations.map((loc) => (
+          <g key={`loc-${loc.label}`}>
+            <motion.g
+              onHoverStart={() => setHoveredLocation(loc.label)}
+              onHoverEnd={() => setHoveredLocation(null)}
+              className="cursor-pointer"
+              whileHover={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <circle
+                cx={loc.x}
+                cy={loc.y}
+                r="3"
+                fill={lineColor}
+                filter="url(#glow)"
+                className="drop-shadow-lg"
+              />
+              <circle cx={loc.x} cy={loc.y} r="3" fill={lineColor} opacity="0.5">
+                <animate
+                  attributeName="r"
+                  from="3"
+                  to="12"
+                  dur="2s"
+                  begin={`${loc.i * 0.4}s`}
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="0.6"
+                  to="0"
+                  dur="2s"
+                  begin={`${loc.i * 0.4}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            </motion.g>
 
-          return (
-            <g key={`points-group-${i}`}>
-              {/* Start Point */}
-              <g key={`start-${i}`}>
-                <motion.g
-                  onHoverStart={() => setHoveredLocation(dot.start.label || `Location ${i}`)}
-                  onHoverEnd={() => setHoveredLocation(null)}
-                  className="cursor-pointer"
-                  whileHover={{ scale: 1.2 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <circle
-                    cx={startPoint.x}
-                    cy={startPoint.y}
-                    r="3"
-                    fill={lineColor}
-                    filter="url(#glow)"
-                    className="drop-shadow-lg"
-                  />
-                  <circle cx={startPoint.x} cy={startPoint.y} r="3" fill={lineColor} opacity="0.5">
-                    <animate attributeName="r" from="3" to="12" dur="2s" begin="0s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" from="0.6" to="0" dur="2s" begin="0s" repeatCount="indefinite" />
-                  </circle>
-                </motion.g>
+            {showLabels && (
+              <motion.g
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + loc.i * 0.22, duration: 0.5 }}
+                className="pointer-events-none"
+              >
+                <foreignObject x={loc.x - 50} y={loc.labelY} width="100" height="30" className="block">
+                  <div className="flex items-center justify-center h-full">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-(--card) text-(--text) border border-(--border) shadow-sm whitespace-nowrap">
+                      {loc.label}
+                    </span>
+                  </div>
+                </foreignObject>
+              </motion.g>
+            )}
+          </g>
+        ))}
 
-                {showLabels && dot.start.label && (
-                  <motion.g
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 * i + 0.3, duration: 0.5 }}
-                    className="pointer-events-none"
-                  >
-                    <foreignObject x={startPoint.x - 50} y={startPoint.y - 35} width="100" height="30" className="block">
-                      <div className="flex items-center justify-center h-full">
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-(--card) text-(--text) border border-(--border) shadow-sm">
-                          {dot.start.label}
-                        </span>
-                      </div>
-                    </foreignObject>
-                  </motion.g>
-                )}
-              </g>
-
-              {/* End Point */}
-              <g key={`end-${i}`}>
-                <motion.g
-                  onHoverStart={() => setHoveredLocation(dot.end.label || `Destination ${i}`)}
-                  onHoverEnd={() => setHoveredLocation(null)}
-                  className="cursor-pointer"
-                  whileHover={{ scale: 1.2 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <circle
-                    cx={endPoint.x}
-                    cy={endPoint.y}
-                    r="3"
-                    fill={lineColor}
-                    filter="url(#glow)"
-                    className="drop-shadow-lg"
-                  />
-                  <circle cx={endPoint.x} cy={endPoint.y} r="3" fill={lineColor} opacity="0.5">
-                    <animate attributeName="r" from="3" to="12" dur="2s" begin="0.5s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" from="0.6" to="0" dur="2s" begin="0.5s" repeatCount="indefinite" />
-                  </circle>
-                </motion.g>
-
-                {showLabels && dot.end.label && (
-                  <motion.g
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 * i + 0.5, duration: 0.5 }}
-                    className="pointer-events-none"
-                  >
-                    <foreignObject x={endPoint.x - 50} y={endPoint.y - 35} width="100" height="30" className="block">
-                      <div className="flex items-center justify-center h-full">
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-(--card) text-(--text) border border-(--border) shadow-sm">
-                          {dot.end.label}
-                        </span>
-                      </div>
-                    </foreignObject>
-                  </motion.g>
-                )}
-              </g>
-            </g>
-          );
-        })}
       </svg>
 
       {/* Mobile Tooltip */}

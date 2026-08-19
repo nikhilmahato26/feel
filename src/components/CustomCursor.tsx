@@ -33,22 +33,31 @@ export default function CustomCursor() {
       ringYRaw.set(e.clientY);
     }
 
-    window.addEventListener("pointermove", handleMove);
+    // Delegated rather than bound to a snapshot of the DOM: elements that
+    // arrive later (the lazily loaded map, conditional badges) are covered too.
+    // Opting out with data-cursor="none" lets a component run its own hover
+    // affordance without the ring fighting it.
+    function isTarget(node: EventTarget | null) {
+      if (!(node instanceof Element)) return false;
+      const hit = node.closest("a, button, .cursor-hover-target");
+      return !!hit && !hit.closest('[data-cursor="none"]');
+    }
 
-    const interactive = document.querySelectorAll("a, button, .cursor-hover-target");
-    const onEnter = () => setHovering(true);
-    const onLeave = () => setHovering(false);
-    interactive.forEach((el) => {
-      el.addEventListener("mouseenter", onEnter);
-      el.addEventListener("mouseleave", onLeave);
-    });
+    const onOver = (e: PointerEvent) => {
+      if (isTarget(e.target)) setHovering(true);
+    };
+    const onOut = (e: PointerEvent) => {
+      if (isTarget(e.target) && !isTarget(e.relatedTarget)) setHovering(false);
+    };
+
+    window.addEventListener("pointermove", handleMove);
+    document.addEventListener("pointerover", onOver);
+    document.addEventListener("pointerout", onOut);
 
     return () => {
       window.removeEventListener("pointermove", handleMove);
-      interactive.forEach((el) => {
-        el.removeEventListener("mouseenter", onEnter);
-        el.removeEventListener("mouseleave", onLeave);
-      });
+      document.removeEventListener("pointerover", onOver);
+      document.removeEventListener("pointerout", onOut);
       root.classList.remove("has-fine-pointer", "cursor-active");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
