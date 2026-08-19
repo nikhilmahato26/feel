@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
+/* Wire Tailwind's dark: variant to our data-theme toggle instead of the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-display: "Outfit", system-ui, sans-serif;
   --font-sans: "Outfit", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --ease-out-premium: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -27,10 +31,19 @@
   --shadow-sm: 0 2px 10px -4px rgba(15, 26, 51, 0.1);
   --shadow-md: 0 20px 44px -16px rgba(15, 26, 51, 0.2);
   --shadow-glow: 0 0 24px -2px rgba(42, 86, 232, 0.55);
-  
+
   --glass-bg: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(255, 255, 255, 0.8);
   --glass-hover-bg: rgba(255, 255, 255, 0.9);
+
+  /* Editorial additions — derived from the palette above, no new hues. */
+  --hairline: rgba(15, 26, 51, 0.1);
+  --hairline-strong: rgba(15, 26, 51, 0.18);
+  --surface: #ffffff;
+  --surface-sunken: #f5f7fb;
+  --grain-opacity: 0.028;
+  --map-arc: #2a56e8;
+  --cursor-shadow: 0 4px 14px -3px rgba(15, 26, 51, 0.3);
 }
 
 [data-theme="dark"] {
@@ -54,6 +67,57 @@
   --glass-bg: rgba(20, 20, 20, 0.6);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-hover-bg: rgba(40, 40, 40, 0.8);
+
+  --hairline: rgba(255, 255, 255, 0.11);
+  --hairline-strong: rgba(255, 255, 255, 0.2);
+  --surface: #141414;
+  --surface-sunken: #0a0a0a;
+  --grain-opacity: 0.05;
+  /* The flat accent disappears against near-black; the lighter tone in the
+     existing palette keeps the arcs legible without introducing a new hue. */
+  --map-arc: #5b7ff0;
+  --cursor-shadow: 0 4px 18px -3px rgba(0, 0, 0, 0.75);
+}
+
+/* ---------------------------------------------------------------
+   Typographic system
+   Three registers: display (Outfit, tight), body (Outfit, relaxed),
+   meta (JetBrains Mono, uppercase, tracked). The mono register is
+   what carries labels, indices and metadata.
+   --------------------------------------------------------------- */
+@layer components {
+  .u-meta {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .u-index {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .u-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.028em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+
+  /* A hairline that reads as a drawn rule, not a border default. */
+  .u-rule {
+    border: 0;
+    border-top: 1px solid var(--hairline);
+    margin: 0;
+  }
 }
 
 @layer utilities {
@@ -64,19 +128,40 @@
     border: 1px solid var(--glass-border);
     transition: all 0.4s var(--ease-out-premium);
   }
-  
+
   .glass-card:hover {
     background: var(--glass-hover-bg);
     transform: translateY(-4px);
     box-shadow: var(--shadow-md);
   }
-  
+
   .glass-panel {
     background: var(--glass-bg);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-md);
+  }
+
+  /* Underline that wipes in from the left and out to the right. */
+  .link-wipe {
+    position: relative;
+  }
+  .link-wipe::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s var(--ease-out-premium);
+  }
+  .link-wipe:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 }
 
@@ -93,6 +178,19 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Film grain — a fixed, non-animated tooth over the whole page.
+   Low enough to read as paper/emulsion rather than as an effect. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 ::selection {
@@ -142,14 +240,27 @@ html {
   }
 }
 .marquee-left {
-  animation: marquee-left 30s linear infinite;
+  animation: marquee-left 46s linear infinite;
 }
 .marquee-right {
-  animation: marquee-right 30s linear infinite;
+  animation: marquee-right 46s linear infinite;
 }
 .marquee-track:hover .marquee-left,
 .marquee-track:hover .marquee-right {
   animation-play-state: paused;
+}
+
+/* Sprocket holes running down the plate edge, as film advances. */
+@keyframes film-advance {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+.film-advance {
+  animation: film-advance 3.2s linear infinite;
 }
 
 @keyframes orb-float {
@@ -168,7 +279,8 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .marquee-left,
   .marquee-right,
-  .orb-float {
+  .orb-float,
+  .film-advance {
     animation: none !important;
   }
 }
@@ -183,6 +295,14 @@ html {
   z-index: 9999;
   opacity: 0;
   transition: opacity 0.3s var(--ease-out-premium);
+}
+
+/* Lift the cursor off the page so it reads over both light and dark panels. */
+.cursor-dot {
+  box-shadow: var(--shadow-glow);
+}
+.cursor-ring {
+  box-shadow: var(--cursor-shadow);
 }
 html.cursor-active .cursor-dot,
 html.cursor-active .cursor-ring {

@@ -6,8 +6,10 @@ import {
   PaintBrush,
   Rocket,
 } from "@phosphor-icons/react";
+import { useRef } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { RevealGroup, RevealItem } from "./Reveal";
-import { DotPattern } from "@/components/ui/dot-pattern";
+import SectionHeader from "./SectionHeader";
 
 const services = [
   { Icon: Compass, title: "Positioning", copy: "Know what you're known for" },
@@ -18,31 +20,75 @@ const services = [
   { Icon: Rocket, title: "Production", copy: "Launches, campaigns, brand films" },
 ];
 
+/**
+ * Wraps a grid cell so a soft accent light tracks the cursor across it. The
+ * position is written straight to CSS custom properties rather than to state —
+ * pointer moves shouldn't re-render six cells.
+ */
+function Spotlight({ children, className = "" }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  function handleMove(e: MouseEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    el.style.setProperty("--my", `${e.clientY - r.top}px`);
+  }
+
+  return (
+    <div ref={ref} onMouseMove={handleMove} className={className}>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background:
+            "radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%)",
+        }}
+      />
+      {children}
+    </div>
+  );
+}
+
 export default function Services() {
   return (
-    <section id="services" className="py-20 md:py-28 bg-(--bg-alt) relative overflow-hidden">
-      <DotPattern className="[mask-image:radial-gradient(600px_circle_at_center,white,transparent)] opacity-40" />
-      <div className="max-w-285 mx-auto px-6 md:px-8 relative z-10">
-        <div className="max-w-xl mx-auto text-center mb-14">
-          <h2 className="font-display font-bold text-[clamp(1.75rem,1.3rem+2vw,3rem)] tracking-[-0.02em] text-balance">
-            One integrated content system.
-          </h2>
-        </div>
+    <section id="services" className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
+      <div className="max-w-285 mx-auto px-6 md:px-8">
+        <SectionHeader
+          index="04"
+          label="Services"
+          title="One integrated content system."
+          lede="Six disciplines, one team, one thread running through all of them."
+          className="mb-16 md:mb-20"
+        />
 
-        <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.06}>
-          {services.map((s) => (
-            <RevealItem key={s.title} className="glass-card rounded-[2rem] p-8 md:p-10 text-left flex flex-col h-full group relative overflow-hidden">
-              <div className="relative z-10 w-14 h-14 rounded-full bg-(--accent-soft) text-(--accent) flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110">
-                <s.Icon size={28} weight="light" />
+        {/* Spec-sheet grid: cells defined by hairlines rather than by cards. */}
+        <RevealGroup
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-(--hairline)"
+          stagger={0.05}
+        >
+          {services.map((s, i) => (
+            <RevealItem key={s.title} className="min-w-0">
+              <Spotlight className="group relative h-full border-b border-r border-(--hairline) p-8 md:p-10 overflow-hidden">
+              <div className="relative z-10 flex items-start justify-between gap-4 mb-8">
+                <span className="u-index text-(--text-secondary) opacity-50 group-hover:text-(--accent) group-hover:opacity-100 transition-colors duration-400">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <s.Icon
+                  size={24}
+                  weight="light"
+                  className="text-(--text-secondary) opacity-70 transition-[color,transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:text-(--accent) group-hover:opacity-100 group-hover:-translate-y-0.5"
+                />
               </div>
-              <h3 className="relative z-10 text-xl md:text-2xl font-display font-semibold mb-3">{s.title}</h3>
-              <p className="relative z-10 text-sm md:text-base text-(--text-secondary) leading-relaxed mb-8 flex-1">{s.copy}</p>
-              
-              <div className="relative z-10 self-end mt-auto w-10 h-10 rounded-full border border-(--border) flex items-center justify-center transition-all duration-300 group-hover:bg-(--text) group-hover:border-transparent group-hover:text-(--bg)">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 13L13 1M13 1H4M13 1V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
+
+              <h3 className="relative z-10 font-display font-semibold text-xl md:text-[1.4rem] tracking-[-0.02em] mb-2.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1">
+                {s.title}
+              </h3>
+              <p className="relative z-10 text-sm md:text-base text-(--text-secondary) leading-relaxed">
+                {s.copy}
+              </p>
+              </Spotlight>
             </RevealItem>
           ))}
         </RevealGroup>
