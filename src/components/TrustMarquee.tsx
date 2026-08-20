@@ -21,7 +21,7 @@ function Slot({ n }: { n: number }) {
       >
         <span className="w-2 h-2 rounded-[1px] bg-(--text-secondary) opacity-40 transition-colors duration-500 group-hover:bg-(--accent) group-hover:opacity-100" />
       </span>
-      <span className="u-meta text-(--text-secondary) opacity-60 whitespace-nowrap transition-opacity duration-500 group-hover:opacity-100">
+      <span className="u-meta text-(--text-secondary) opacity-85 whitespace-nowrap transition-opacity duration-500 group-hover:opacity-100">
         Client {String(n).padStart(2, "0")}
       </span>
     </div>
@@ -67,7 +67,7 @@ export default function TrustMarquee() {
       onMouseLeave={() => (paused.current = false)}
     >
       <div className="flex items-center">
-        <span className="u-meta shrink-0 text-(--text-secondary) opacity-70 pl-6 md:pl-8 pr-6 py-6 border-r border-(--border) hidden sm:block">
+        <span className="u-meta shrink-0 text-(--text-secondary) pl-6 md:pl-8 pr-6 py-6 border-r border-(--border) hidden sm:block">
           Clients
         </span>
 

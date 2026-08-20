@@ -178,7 +178,7 @@ export default function Hero() {
             </div>
             <div aria-hidden className="mx-auto mt-5 h-px w-12 bg-(--hero-text) opacity-45" />
             <div className="mt-6 flex justify-center">
-              <span className="u-meta inline-block rounded-[50%] border border-(--hero-text) px-6 py-3 opacity-70 -rotate-6">
+              <span className="u-meta inline-block rounded-[50%] border border-(--hero-text) px-6 py-3 opacity-90 -rotate-6">
                 Since day one
               </span>
             </div>
@@ -240,7 +240,7 @@ export default function Hero() {
       >
         {META.map((m) => (
           <div key={m.k} className="px-6 md:px-8 py-5 flex flex-col gap-1.5">
-            <dt className="u-meta text-(--text-secondary) opacity-70">{m.k}</dt>
+            <dt className="u-meta text-(--text-secondary)">{m.k}</dt>
             <dd className="text-sm font-medium">{m.v}</dd>
           </div>
         ))}

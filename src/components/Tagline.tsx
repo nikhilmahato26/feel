@@ -33,7 +33,7 @@ export default function Tagline() {
                     className="block h-full w-full origin-left scale-x-0 bg-(--accent) transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100"
                   />
                 </div>
-                <span className="u-meta mt-3 block text-(--text-secondary) opacity-60 transition-opacity duration-300 group-hover:opacity-100">
+                <span className="u-meta mt-3 block text-(--text-secondary) opacity-85 transition-opacity duration-300 group-hover:opacity-100">
                   {label}
                 </span>
               </div>

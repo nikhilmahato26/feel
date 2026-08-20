@@ -87,7 +87,7 @@ export default function GlobalNetwork() {
               Static under the map on small screens, inset once there is room. */}
           <dl className="pointer-events-none mt-8 grid grid-cols-3 gap-6 lg:mt-0 lg:absolute lg:bottom-10 lg:left-10 lg:grid-cols-1 lg:gap-0 lg:w-44">
             <div className="lg:border-b lg:border-(--hairline) lg:pb-4">
-              <dt className="u-meta text-(--text-secondary) opacity-60 order-2 mt-2 block lg:mt-2.5">
+              <dt className="u-meta text-(--text-secondary) order-2 mt-2 block lg:mt-2.5">
                 Markets served
               </dt>
               <dd className="font-display font-bold text-2xl lg:text-3xl tracking-[-0.02em] tabular-nums">
@@ -95,7 +95,7 @@ export default function GlobalNetwork() {
               </dd>
             </div>
             <div className="lg:border-b lg:border-(--hairline) lg:py-4">
-              <dt className="u-meta text-(--text-secondary) opacity-60 order-2 mt-2 block lg:mt-2.5">
+              <dt className="u-meta text-(--text-secondary) order-2 mt-2 block lg:mt-2.5">
                 Continents
               </dt>
               <dd className="font-display font-bold text-2xl lg:text-3xl tracking-[-0.02em] tabular-nums">
@@ -103,7 +103,7 @@ export default function GlobalNetwork() {
               </dd>
             </div>
             <div className="lg:pt-4">
-              <dt className="u-meta text-(--text-secondary) opacity-60 order-2 mt-2 block lg:mt-2.5">
+              <dt className="u-meta text-(--text-secondary) order-2 mt-2 block lg:mt-2.5">
                 Studio
               </dt>
               <dd className="font-display font-bold text-xl lg:text-2xl tracking-[-0.02em]">

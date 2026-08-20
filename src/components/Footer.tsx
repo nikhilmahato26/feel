@@ -90,7 +90,7 @@ export default function Footer() {
 
           {COLUMNS.map((col) => (
             <nav key={col.label} className="md:col-span-2 md:col-start-auto">
-              <h3 className="u-meta text-(--text-secondary) opacity-60 mb-5">{col.label}</h3>
+              <h3 className="u-meta text-(--text-secondary) mb-5">{col.label}</h3>
               <ul className="space-y-3 text-sm">
                 {col.items.map((it) => (
                   <li key={it.text}>
@@ -114,10 +114,10 @@ export default function Footer() {
         <div className="u-rule" />
 
         <div className="pt-6 flex flex-wrap items-center justify-between gap-4">
-          <span className="u-meta text-(--text-secondary) opacity-55">
+          <span className="u-meta text-(--text-secondary) opacity-85">
             © {new Date().getFullYear()} Feelz Films
           </span>
-          <span className="u-meta text-(--text-secondary) opacity-55">New Delhi · Worldwide</span>
+          <span className="u-meta text-(--text-secondary) opacity-85">New Delhi · Worldwide</span>
         </div>
       </div>
     </footer>

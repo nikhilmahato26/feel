@@ -12,7 +12,7 @@ export default function Testimonials() {
             label="Portfolio"
             title="Hear it from the people we've worked with."
           />
-          <span className="u-meta text-(--text-secondary) opacity-60 pb-2">
+          <span className="u-meta text-(--text-secondary) pb-2">
             Contact sheet · 05 frames
           </span>
         </div>

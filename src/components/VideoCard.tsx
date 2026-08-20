@@ -77,7 +77,7 @@ export default function VideoCard({ label, index, className = "", featured = fal
 
       {/* Slate metadata */}
       <span className="absolute top-3 left-3 u-index text-(--text-secondary) opacity-55">{index}</span>
-      <span className="absolute top-3 right-3 u-meta text-(--text-secondary) opacity-40 tabular-nums">
+      <span className="absolute top-3 right-3 u-meta text-(--text-secondary) opacity-70 tabular-nums">
         --:--
       </span>
 

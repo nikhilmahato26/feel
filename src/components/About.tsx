@@ -41,7 +41,7 @@ export default function About() {
               {/* Draft slot — deliberately marked so it reads as an editor's note,
                   never as shipped copy. Delete this block once the story is written. */}
               <aside className="mt-8 max-w-[54ch] border-l-2 border-dashed border-(--hairline-strong) pl-5 py-1">
-                <p className="u-meta text-(--text-secondary) opacity-60 mb-2">Draft slot · founding story</p>
+                <p className="u-meta text-(--text-secondary) mb-2">Draft slot · founding story</p>
                 <p className="text-sm leading-relaxed text-(--text-secondary) opacity-80">
                   One or two sentences on why Feelz Films started and the problem you saw.
                 </p>

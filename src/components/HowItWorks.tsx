@@ -86,7 +86,7 @@ export default function HowItWorks() {
 
               <div className="flex items-baseline gap-4">
                 <span className="u-index text-(--accent)">{s.k}</span>
-                <span className="u-meta text-(--text-secondary) opacity-70">{s.question}</span>
+                <span className="u-meta text-(--text-secondary)">{s.question}</span>
               </div>
 
               <h3 className="font-display font-semibold text-xl md:text-2xl tracking-[-0.02em] mt-5 mb-3">
