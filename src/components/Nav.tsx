@@ -8,6 +8,7 @@ import {
   useMotionValueEvent,
   useSpring,
 } from "motion/react";
+import { Link, useLocation } from "react-router-dom";
 import { Sun, Moon, Globe, List, X } from "@phosphor-icons/react";
 import MagneticButton from "./MagneticButton";
 import type { Theme } from "../lib/useTheme";
@@ -17,10 +18,14 @@ interface NavProps {
   onToggleTheme: () => void;
 }
 
+/**
+ * Two in-page anchors and one route. Anchors are written absolute ("/#about")
+ * so they also work from the portfolio page, where those sections don't exist.
+ */
 const links = [
-  { href: "#about", label: "About" },
-  { href: "#services", label: "Services" },
-  { href: "#portfolio", label: "Portfolio" },
+  { to: "/#about", section: "#about", label: "About" },
+  { to: "/#services", section: "#services", label: "Services" },
+  { to: "/portfolio", section: null, label: "Portfolio" },
 ];
 
 /** Marks the link whose section currently owns the viewport. */
@@ -30,14 +35,17 @@ function isOutOfBand(el: Element) {
   return r.bottom < mid || r.top > mid;
 }
 
-function useActiveSection(ids: string[]) {
+function useActiveSection(ids: string[], routeKey: string) {
   const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
     const targets = ids
       .map((id) => document.querySelector(id))
       .filter((el): el is Element => el !== null);
-    if (!targets.length) return;
+    if (!targets.length) {
+      setActive(null);
+      return;
+    }
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -57,21 +65,23 @@ function useActiveSection(ids: string[]) {
 
     targets.forEach((t) => io.observe(t));
     return () => io.disconnect();
-  }, [ids]);
+    // routeKey re-runs this after a navigation, when the sections have changed.
+  }, [ids, routeKey]);
 
   return active;
 }
 
-const IDS = links.map((l) => l.href);
+const IDS = links.map((l) => l.section).filter((s): s is string => s !== null);
 
 export default function Nav({ theme, onToggleTheme }: NavProps) {
+  const { pathname } = useLocation();
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 180, damping: 30, mass: 0.3 });
   const lastY = useRef(0);
   const [hidden, setHidden] = useState(false);
   const [elevated, setElevated] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const active = useActiveSection(IDS);
+  const active = useActiveSection(IDS, pathname);
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setElevated(y > 60);
@@ -97,6 +107,9 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
     };
   }, [menuOpen]);
 
+  const isCurrent = (l: (typeof links)[number]) =>
+    l.section ? pathname === "/" && active === l.section : pathname === l.to;
+
   return (
     <motion.nav
       animate={{ y: hidden ? "-100%" : "0%" }}
@@ -106,41 +119,41 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
     >
       <div className="relative flex items-center justify-between gap-4 px-6 py-4 md:gap-6 md:px-8">
         {/* Identity — wordmark only. */}
-        <a
-          href="#"
+        <Link
+          to="/"
           className="cursor-hover-target shrink-0 font-display text-lg font-bold tracking-tight text-(--text)"
         >
           Feelz <span className="text-(--accent)">Films</span>
-        </a>
+        </Link>
 
         <span className="u-meta hidden lg:block text-(--text-secondary) shrink-0">
-          Content_partner
+          Marketing_partner
         </span>
 
         {/* Centred capsule — the page index, held in its own pill. */}
         <div className="hidden md:flex items-center gap-1 rounded-full border border-(--hairline-strong) p-1 shrink-0">
           {links.map((l) => {
-            const isActive = active === l.href;
+            const current = isCurrent(l);
             return (
-              <a
-                key={l.href}
-                href={l.href}
-                aria-current={isActive ? "true" : undefined}
+              <Link
+                key={l.to}
+                to={l.to}
+                aria-current={current ? "page" : undefined}
                 className={`cursor-hover-target u-meta rounded-full px-3.5 py-2 transition-colors duration-300 ${
-                  isActive
+                  current
                     ? "bg-(--accent) text-(--accent-text)"
                     : "text-(--text-secondary) hover:text-(--text)"
                 }`}
               >
                 {l.label}
-              </a>
+              </Link>
             );
           })}
         </div>
 
         <span className="u-meta hidden lg:flex items-center gap-1.5 text-(--text-secondary) shrink-0">
           <Globe size={14} />
-          New Delhi, India
+          India
         </span>
 
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
@@ -188,23 +201,23 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
             className="md:hidden overflow-hidden border-t border-(--hairline)"
           >
             <div className="flex flex-col px-6 pb-6 pt-2">
-              {links.map((l) => {
-                const isActive = active === l.href;
+              {links.map((l, i) => {
+                const current = isCurrent(l);
                 return (
-                  <a
-                    key={l.href}
-                    href={l.href}
+                  <Link
+                    key={l.to}
+                    to={l.to}
                     onClick={() => setMenuOpen(false)}
-                    aria-current={isActive ? "true" : undefined}
+                    aria-current={current ? "page" : undefined}
                     className={`u-meta flex items-center justify-between border-b border-(--hairline) py-4 transition-colors duration-200 ${
-                      isActive ? "text-(--accent)" : "text-(--text)"
+                      current ? "text-(--accent)" : "text-(--text)"
                     }`}
                   >
                     {l.label}
                     <span className="u-index text-(--text-secondary)">
-                      {String(links.indexOf(l) + 1).padStart(2, "0")}
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  </a>
+                  </Link>
                 );
               })}
 
@@ -218,7 +231,7 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
 
               <span className="u-meta mt-5 flex items-center gap-1.5 text-(--text-secondary)">
                 <Globe size={14} />
-                New Delhi, India
+                India
               </span>
             </div>
           </motion.div>

@@ -3,35 +3,41 @@
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import SectionHeader from "./SectionHeader";
+import YouTubeFrame from "./YouTubeFrame";
+import Tilt3D from "./Tilt3D";
 
-interface Step {
+interface Chapter {
   k: string;
   title: string;
-  question: string;
   description: string;
+  /**
+   * YouTube ID for this chapter. Empty until the films are published — the
+   * frame stays reserved and switches to a real player the moment one lands.
+   */
+  youtubeId?: string;
 }
 
-const steps: Step[] = [
+const chapters: Chapter[] = [
   {
     k: "01",
-    title: "Team & approach",
-    question: "Who we are",
+    title: "Your Expertise Deserves to Be Seen",
     description:
-      "A dedicated team acting as your content partner rather than a rotating cast of freelancers.",
+      "Your expertise, experience and ideas are valuable. But if they aren't being seen, they aren't building the trust, credibility and opportunities they could.",
+    youtubeId: "",
   },
   {
     k: "02",
-    title: "Strategy → production",
-    question: "How we work",
+    title: "What Do We Actually Do?",
     description:
-      "From initial concept to full-scale production, planned and executed by one team, internally.",
+      "We turn what you know into content that gets noticed, builds authority and keeps your brand relevant.",
+    youtubeId: "",
   },
   {
     k: "03",
-    title: "Results & delivery",
-    question: "What you get",
+    title: "The Result",
     description:
-      "Tangible business growth, and a library of assets that keeps working long after delivery.",
+      "One team taking your content from strategy to screen to distribution, built to create visibility, credibility and business opportunities.",
+    youtubeId: "",
   },
 ];
 
@@ -39,8 +45,8 @@ export default function HowItWorks() {
   const reduce = useReducedMotion();
   const gridRef = useRef<HTMLDivElement>(null);
 
-  // The rule fills as you travel through the steps rather than firing once on
-  // entry, so the process reads as something you are moving along.
+  // The rule fills as you travel through the chapters rather than firing once
+  // on entry, so the sequence reads as something you are moving along.
   const { scrollYProgress } = useScroll({
     target: gridRef,
     offset: ["start 0.85", "end 0.55"],
@@ -49,17 +55,18 @@ export default function HowItWorks() {
   const scaleX = useTransform(fill, (v) => (reduce ? 1 : v));
 
   return (
-    <section className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
+    <section id="how-it-works" className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <SectionHeader
           index="02"
           label="How it works"
-          title="Who we are. How we work. What you get."
+          title="Who we are? What we solve? What you get?"
+          lede="Three short films, in order. Watch them back to back and you have the whole picture."
           align="center"
           className="mb-16 md:mb-20"
         />
 
-        {/* Process rule: fills with scroll, with a tick above each step. */}
+        {/* Process rule: fills with scroll, with a tick above each chapter. */}
         <div className="relative mb-px" aria-hidden>
           <div className="h-px w-full bg-(--hairline)" />
           <motion.div
@@ -69,13 +76,17 @@ export default function HowItWorks() {
         </div>
 
         <div ref={gridRef} className="grid md:grid-cols-3 md:divide-x divide-(--hairline)">
-          {steps.map((s, i) => (
+          {chapters.map((c, i) => (
             <motion.article
-              key={s.k}
-              initial={reduce ? false : { opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.7, delay: 0.25 + i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+              key={c.k}
+              initial={
+                reduce ? false : { opacity: 0, y: 34, rotateY: -14, transformPerspective: 1100 }
+              }
+              whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
+              viewport={{ once: true, amount: 0.35 }}
+              // Staggered by index so the three always resolve 01 → 02 → 03,
+              // however far down the page you enter them.
+              transition={{ duration: 0.8, delay: 0.15 + i * 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="group relative pt-10 pb-10 md:px-8 md:first:pl-0 md:last:pr-0 border-b border-(--hairline) md:border-b-0"
             >
               {/* Tick sitting on the rule above this column. */}
@@ -84,17 +95,26 @@ export default function HowItWorks() {
                 className="absolute -top-px left-0 md:left-8 md:group-first:left-0 h-3 w-px bg-(--accent) -translate-y-full"
               />
 
+              <Tilt3D className="mb-7" glare={false}>
+                <YouTubeFrame
+                  id={c.youtubeId}
+                  index={c.k}
+                  title={c.title}
+                  className="aspect-video"
+                />
+              </Tilt3D>
+
               <div className="flex items-baseline gap-4">
-                <span className="u-index text-(--accent)">{s.k}</span>
-                <span className="u-meta text-(--text-secondary)">{s.question}</span>
+                <span className="u-index text-(--accent)">{c.k}</span>
+                <span className="u-meta text-(--text-secondary)">Video {c.k}</span>
               </div>
 
               <h3 className="font-display font-semibold text-xl md:text-2xl tracking-[-0.02em] mt-5 mb-3">
-                {s.title}
+                {c.title}
               </h3>
 
               <p className="text-sm md:text-base leading-relaxed text-(--text-secondary) max-w-[38ch]">
-                {s.description}
+                {c.description}
               </p>
 
               <span

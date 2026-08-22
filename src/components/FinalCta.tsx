@@ -1,8 +1,9 @@
 import { Reveal } from "./Reveal";
 import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
+import Tilt3D from "./Tilt3D";
 
-function CropMark({ className }: { className: string }) {
+function CornerTick({ className }: { className: string }) {
   return (
     <span aria-hidden className={`absolute w-4 h-4 opacity-40 ${className}`}>
       <span className="absolute inset-x-0 top-0 h-px bg-(--hero-text)" />
@@ -12,17 +13,23 @@ function CropMark({ className }: { className: string }) {
 }
 
 /**
- * Bookend to the hero: the same accent plate, the same crop marks, closing the
- * page on the colour it opened with.
+ * Bookend to the hero: the same accent, the same grid, closing the page on the
+ * colour it opened with.
  */
 export default function FinalCta() {
   return (
     <section className="py-24 md:py-32 border-b border-(--border)">
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <Reveal y={36}>
+          {/* Shallow angles only: the plate carries body copy, and copy on a
+              steeply rotated plane goes soft. */}
+          <Tilt3D max={4} lift={18} glare={false}>
           <div
             className="relative overflow-hidden rounded-2xl px-8 py-16 md:px-16 md:py-24 text-(--hero-text)"
-            style={{ background: "linear-gradient(160deg, var(--color-accent), var(--color-accent-2))" }}
+            style={{
+              background: "linear-gradient(160deg, var(--color-accent), var(--color-accent-2))",
+              boxShadow: "0 50px 90px -50px rgba(42,86,232,0.75)",
+            }}
           >
             <div
               aria-hidden
@@ -33,10 +40,10 @@ export default function FinalCta() {
                 backgroundSize: "64px 64px",
               }}
             />
-            <CropMark className="top-6 left-6" />
-            <CropMark className="top-6 right-6 rotate-90" />
-            <CropMark className="bottom-6 right-6 rotate-180" />
-            <CropMark className="bottom-6 left-6 -rotate-90" />
+            <CornerTick className="top-6 left-6" />
+            <CornerTick className="top-6 right-6 rotate-90" />
+            <CornerTick className="bottom-6 right-6 rotate-180" />
+            <CornerTick className="bottom-6 left-6 -rotate-90" />
 
             <div className="relative z-10 max-w-2xl">
               <div className="flex items-center gap-3 mb-8">
@@ -45,7 +52,7 @@ export default function FinalCta() {
               </div>
 
               <h2 className="u-display text-[clamp(1.9rem,1.5rem+2vw,3rem)] leading-[1.05] max-w-[20ch]">
-                <TextReveal text="Book a 20-minute call. Leave with a content plan either way." />
+                <TextReveal text="Book a 20-minute call. Leave with a marketing plan either way." />
               </h2>
 
               <p className="mt-6 text-base md:text-lg opacity-85 max-w-[46ch] leading-relaxed">
@@ -63,6 +70,7 @@ export default function FinalCta() {
               </div>
             </div>
           </div>
+          </Tilt3D>
         </Reveal>
       </div>
     </section>

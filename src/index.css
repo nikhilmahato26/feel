@@ -4,8 +4,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-  --font-display: "Outfit", system-ui, sans-serif;
-  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --ease-out-premium: cubic-bezier(0.16, 1, 0.3, 1);
@@ -143,6 +143,44 @@
     box-shadow: var(--shadow-md);
   }
 
+  /* ---------------------------------------------------------------
+     Depth
+     A grid gets one shared vanishing point, and its cells lift out of
+     the page toward the reader. One scene per grid, so cells at the
+     edges catch the perspective and read as physically placed.
+     --------------------------------------------------------------- */
+  .depth-scene {
+    perspective: 1400px;
+    perspective-origin: 50% 45%;
+  }
+
+  .depth-cell {
+    transition:
+      transform 0.65s var(--ease-out-premium),
+      box-shadow 0.65s var(--ease-out-premium),
+      background-color 0.5s var(--ease-out-premium);
+  }
+
+  /* focus-within keeps the lift reachable from the keyboard. */
+  .depth-cell:hover,
+  .depth-cell:focus-within {
+    transform: translateZ(44px);
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+  }
+
+  /* Hover-reveal service lists. Without a hovering pointer there is no way to
+     trigger them, so on touch the list is simply always open. */
+  @media (hover: none) {
+    .svc-list {
+      opacity: 1;
+      transform: none;
+    }
+    .svc-watermark {
+      opacity: 0;
+    }
+  }
+
   /* Underline that wipes in from the left and out to the right. */
   .link-wipe {
     position: relative;
@@ -250,17 +288,18 @@ html {
   animation-play-state: paused;
 }
 
-/* Sprocket holes running down the plate edge, as film advances. */
-@keyframes film-advance {
+/* The hero floor, drifting toward the viewer so the depth reads as space
+   rather than as a static backdrop. One tile of travel keeps it seamless. */
+@keyframes grid-drift {
   from {
-    transform: translateY(0);
+    background-position: 0 0;
   }
   to {
-    transform: translateY(-50%);
+    background-position: 0 72px;
   }
 }
-.film-advance {
-  animation: film-advance 3.2s linear infinite;
+.grid-drift {
+  animation: grid-drift 3.6s linear infinite;
 }
 
 @keyframes orb-float {
@@ -280,8 +319,17 @@ html {
   .marquee-left,
   .marquee-right,
   .orb-float,
-  .film-advance {
+  .grid-drift {
     animation: none !important;
+  }
+
+  .depth-cell {
+    transition: none;
+  }
+  .depth-cell:hover,
+  .depth-cell:focus-within {
+    transform: none;
+    box-shadow: none;
   }
 }
 

@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "motion/react";
+import { registerScroller } from "../lib/scroller";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,6 +21,8 @@ export default function SmoothScroll() {
     });
 
     lenis.on("scroll", ScrollTrigger.update);
+    // Hand the instance to the router so in-app navigation scrolls through it.
+    registerScroller(lenis);
 
     function tick(time: number) {
       lenis.raf(time * 1000);
@@ -29,6 +32,7 @@ export default function SmoothScroll() {
 
     return () => {
       gsap.ticker.remove(tick);
+      registerScroller(null);
       lenis.destroy();
     };
   }, [reduce]);

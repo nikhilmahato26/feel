@@ -1,32 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Check, Copy } from "@phosphor-icons/react";
 
-const COLUMNS = [
+interface FooterItem {
+  text: string;
+  /** In-app route or anchor, routed through the router. */
+  to?: string;
+  /** External destination. */
+  href?: string;
+}
+
+const COLUMNS: Array<{ label: string; items: FooterItem[] }> = [
   {
     label: "Navigate",
     items: [
-      { text: "About", href: "#about" },
-      { text: "How it works", href: "#services" },
-      { text: "Portfolio", href: "#portfolio" },
-    ],
-  },
-  {
-    label: "Markets",
-    items: [
-      { text: "United States", href: null },
-      { text: "United Kingdom", href: null },
-      { text: "Canada · Australia", href: null },
-      { text: "UAE · India", href: null },
+      { text: "About", to: "/#about" },
+      { text: "How it works", to: "/#how-it-works" },
+      { text: "Services", to: "/#services" },
+      { text: "Portfolio", to: "/portfolio" },
     ],
   },
   {
     label: "Studio",
-    items: [
-      { text: "New Delhi, India", href: null },
-      { text: "www.feelzfilms.com", href: "https://www.feelzfilms.com" },
-    ],
+    items: [{ text: "India" }, { text: "www.feelzfilms.com", href: "https://www.feelzfilms.com" }],
   },
 ];
 
@@ -69,12 +67,15 @@ export default function Footer() {
     <footer className="pt-20 pb-10">
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <div className="grid gap-12 md:grid-cols-12 pb-16">
-          <div className="md:col-span-4">
+          <div className="md:col-span-6">
             <div className="font-display font-bold text-lg tracking-tight">
               FEELZ <span className="text-(--accent)">FILMS</span>
             </div>
+            <p className="u-meta mt-3 text-(--text-secondary)">
+              Production House Pvt. Ltd.
+            </p>
             <p className="mt-4 text-sm leading-relaxed text-(--text-secondary) max-w-[30ch]">
-              Turning expertise into content, authority and growth.
+              Marketing that turns expertise into authority, demand and growth.
             </p>
 
             <div className="mt-8 flex items-center gap-4 flex-wrap">
@@ -89,12 +90,19 @@ export default function Footer() {
           </div>
 
           {COLUMNS.map((col) => (
-            <nav key={col.label} className="md:col-span-2 md:col-start-auto">
+            <nav key={col.label} className="md:col-span-3">
               <h3 className="u-meta text-(--text-secondary) mb-5">{col.label}</h3>
               <ul className="space-y-3 text-sm">
                 {col.items.map((it) => (
                   <li key={it.text}>
-                    {it.href ? (
+                    {it.to ? (
+                      <Link
+                        to={it.to}
+                        className="cursor-hover-target link-wipe text-(--text-secondary) hover:text-(--text) transition-colors duration-300"
+                      >
+                        {it.text}
+                      </Link>
+                    ) : it.href ? (
                       <a
                         href={it.href}
                         className="cursor-hover-target link-wipe text-(--text-secondary) hover:text-(--text) transition-colors duration-300"
@@ -115,9 +123,9 @@ export default function Footer() {
 
         <div className="pt-6 flex flex-wrap items-center justify-between gap-4">
           <span className="u-meta text-(--text-secondary) opacity-85">
-            © {new Date().getFullYear()} Feelz Films
+            © {new Date().getFullYear()} Feelz Films Production House Pvt. Ltd.
           </span>
-          <span className="u-meta text-(--text-secondary) opacity-85">New Delhi · Worldwide</span>
+          <span className="u-meta text-(--text-secondary) opacity-85">India · Worldwide</span>
         </div>
       </div>
     </footer>
