@@ -2,6 +2,7 @@ import { Reveal, RevealGroup, RevealItem } from "../components/Reveal";
 import TextReveal from "../components/TextReveal";
 import VideoCard from "../components/VideoCard";
 import Tilt3D from "../components/Tilt3D";
+import ScrollStage from "../components/ScrollStage";
 import FinalCta from "../components/FinalCta";
 
 /**
@@ -50,6 +51,7 @@ export default function Portfolio() {
 
       {/* Reserved grid. */}
       <section className="py-16 md:py-24 border-b border-(--border)">
+        <ScrollStage>
         <div className="max-w-285 mx-auto px-6 md:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
             <span className="u-meta text-(--text-secondary)">
@@ -79,6 +81,7 @@ export default function Portfolio() {
             ))}
           </RevealGroup>
         </div>
+        </ScrollStage>
       </section>
 
       <FinalCta />

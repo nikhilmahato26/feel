@@ -3,19 +3,10 @@
 import { useCallback, useRef } from "react";
 import type { PointerEvent } from "react";
 import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
-import { InstagramLogo, LinkedinLogo, YoutubeLogo } from "@phosphor-icons/react";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
-
-/**
- * Social presence. Handles are placeholders until the real accounts are
- * confirmed — update the four hrefs here and nowhere else.
- */
-const SOCIALS = [
-  { Icon: InstagramLogo, label: "Instagram", href: "https://instagram.com/feelzfilms" },
-  { Icon: LinkedinLogo, label: "LinkedIn", href: "https://linkedin.com/company/feelzfilms" },
-  { Icon: YoutubeLogo, label: "YouTube", href: "https://youtube.com/@feelzfilms" },
-];
+import { SOCIALS } from "../lib/socials";
 
 interface Panel {
   label: string;
@@ -232,25 +223,46 @@ export default function Hero() {
             </MagneticButton>
           </motion.div>
 
-          {/* ---- Social presence, sitting on its own rule ---- */}
-          <motion.div {...rise(0.92)} className="mt-12 flex items-center gap-5 flex-wrap">
-            <span className="u-meta text-(--text-secondary) flex items-center gap-3">
-              Follow
-              <span aria-hidden className="h-px w-6 bg-(--hairline-strong)" />
-            </span>
-            <ul className="flex items-center gap-2.5">
-              {SOCIALS.map(({ Icon, label, href }) => (
+          {/* ---- Social presence ----
+              Held one step below the primary CTA: accent marks and full-strength
+              labels on a drawn button, filling with accent on hover. Prominent,
+              without competing with "Book a call" for the solid-fill slot. */}
+          <motion.div {...rise(0.92)} className="mt-14 border-t border-(--hairline) pt-8">
+            <div className="flex items-center gap-3">
+              <span className="u-meta text-(--accent)">Follow along</span>
+              <span aria-hidden className="h-px flex-1 max-w-20 bg-(--hairline)" />
+            </div>
+
+            <ul className="mt-5 flex flex-wrap items-center gap-3">
+              {SOCIALS.map(({ Icon, label, handle, href }) => (
                 <li key={label}>
                   <a
                     href={href}
                     target="_blank"
                     rel="noreferrer noopener"
-                    aria-label={label}
-                    title={label}
-                    className="cursor-hover-target group flex items-center gap-2 rounded-full border border-(--border) px-3.5 py-2.5 text-(--text-secondary) transition-[color,border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-(--accent) hover:text-(--accent)"
+                    aria-label={`${label} — ${handle}`}
+                    className="prism cursor-hover-target block w-44"
+                    style={{ ["--prism-h" as string]: "3.5rem" }}
                   >
-                    <Icon size={17} />
-                    <span className="u-meta hidden sm:inline">{label}</span>
+                    {/* Both faces are decorative: the link's aria-label is the
+                        accessible name, so neither gets read twice. */}
+                    <span className="prism-body">
+                      <span
+                        aria-hidden
+                        className="prism-face prism-front border border-(--hairline-strong) bg-(--bg) text-(--text)"
+                      >
+                        <Icon size={22} weight="fill" className="text-(--accent)" />
+                        <span className="text-sm font-semibold">{label}</span>
+                      </span>
+
+                      <span
+                        aria-hidden
+                        className="prism-face prism-back bg-(--accent) text-(--accent-text) shadow-[0_18px_34px_-18px_rgba(42,86,232,0.85)]"
+                      >
+                        <span className="u-meta">{handle}</span>
+                        <ArrowUpRight size={15} weight="bold" />
+                      </span>
+                    </span>
                   </a>
                 </li>
               ))}

@@ -16,6 +16,20 @@ export function registerScroller(lenis: Lenis | null) {
   instance = lenis;
 }
 
+/**
+ * Held still behind the preloader. Lenis keeps its own animation loop, so
+ * overflow alone won't stop it — it has to be told to stand down as well.
+ */
+export function lockScroll() {
+  instance?.stop();
+  document.documentElement.style.overflow = "hidden";
+}
+
+export function unlockScroll() {
+  document.documentElement.style.overflow = "";
+  instance?.start();
+}
+
 export function scrollToTarget(target: string | number, immediate = false) {
   if (instance) {
     instance.scrollTo(target, {

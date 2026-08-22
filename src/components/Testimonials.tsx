@@ -4,10 +4,12 @@ import { RevealGroup, RevealItem } from "./Reveal";
 import SectionHeader from "./SectionHeader";
 import VideoCard from "./VideoCard";
 import Tilt3D from "./Tilt3D";
+import ScrollStage from "./ScrollStage";
 
 export default function Testimonials() {
   return (
     <section id="testimonials" className="py-24 md:py-32 border-b border-(--border)">
+      <ScrollStage>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-14 md:mb-16">
           <SectionHeader
@@ -53,6 +55,7 @@ export default function Testimonials() {
           </RevealItem>
         </RevealGroup>
       </div>
+      </ScrollStage>
     </section>
   );
 }

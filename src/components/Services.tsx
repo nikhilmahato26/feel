@@ -11,6 +11,7 @@ import type { Icon } from "@phosphor-icons/react";
 import { RevealGroup, RevealItem } from "./Reveal";
 import SectionHeader from "./SectionHeader";
 import MagneticButton from "./MagneticButton";
+import ScrollStage from "./ScrollStage";
 
 interface Service {
   k: string;
@@ -88,6 +89,7 @@ const services: Service[] = [
 export default function Services() {
   return (
     <section id="services" className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
+      <ScrollStage>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <SectionHeader
           index="03"
@@ -176,6 +178,7 @@ export default function Services() {
           </RevealItem>
         </RevealGroup>
       </div>
+      </ScrollStage>
     </section>
   );
 }

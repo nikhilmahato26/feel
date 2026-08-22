@@ -5,6 +5,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { Reveal, RevealGroup, RevealItem } from "./Reveal";
 import SectionHeader from "./SectionHeader";
 import Counter from "./Counter";
+import ScrollStage from "./ScrollStage";
 
 const stats: Array<{
   n: string;
@@ -42,6 +43,7 @@ export default function About() {
         style={{ background: "radial-gradient(circle, var(--color-accent), transparent 65%)" }}
       />
 
+      <ScrollStage amount={0.6}>
       <div className="relative max-w-285 mx-auto px-6 md:px-8">
         <div className="grid md:grid-cols-12 gap-x-12 gap-y-14">
           <motion.div style={{ y: copyY }} className="md:col-span-7">
@@ -101,6 +103,7 @@ export default function About() {
           </motion.div>
         </div>
       </div>
+      </ScrollStage>
     </section>
   );
 }

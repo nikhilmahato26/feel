@@ -9,7 +9,7 @@ import { useScrollVelocityFactor } from "../lib/useScrollVelocityFactor";
  * a reserved plate with its own index — a designed placeholder rather than a
  * dashed box with the word "logo" in it. Swap the inner mark for an <img>.
  */
-const COUNT = 12;
+const COUNT = 10;
 const FACE_W = 188; // px, before perspective
 const BASE_SPEED = 5.4; // degrees per second at rest
 

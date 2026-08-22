@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Copy } from "@phosphor-icons/react";
+import { ArrowUpRight, Check, Copy } from "@phosphor-icons/react";
+import Wordmark from "./Wordmark";
+import { SOCIALS } from "../lib/socials";
 
 interface FooterItem {
   text: string;
@@ -68,9 +70,7 @@ export default function Footer() {
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <div className="grid gap-12 md:grid-cols-12 pb-16">
           <div className="md:col-span-6">
-            <div className="font-display font-bold text-lg tracking-tight">
-              FEELZ <span className="text-(--accent)">FILMS</span>
-            </div>
+            <Wordmark size="footer" label="Feelz Films" className="text-(--text)" />
             <p className="u-meta mt-3 text-(--text-secondary)">
               Production House Pvt. Ltd.
             </p>
@@ -87,6 +87,38 @@ export default function Footer() {
               </a>
               <CopyEmail />
             </div>
+
+            {/* Accounts, rolling to the accent face like the ones in the hero. */}
+            <ul className="mt-8 flex items-center gap-3">
+              {SOCIALS.map(({ Icon, label, handle, href }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label={`${label} — ${handle}`}
+                    title={label}
+                    className="prism cursor-hover-target block w-12"
+                    style={{ ["--prism-h" as string]: "3rem" }}
+                  >
+                    <span className="prism-body">
+                      <span
+                        aria-hidden
+                        className="prism-face prism-front border border-(--hairline-strong) text-(--accent)"
+                      >
+                        <Icon size={21} weight="fill" />
+                      </span>
+                      <span
+                        aria-hidden
+                        className="prism-face prism-back bg-(--accent) text-(--accent-text)"
+                      >
+                        <ArrowUpRight size={17} weight="bold" />
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {COLUMNS.map((col) => (

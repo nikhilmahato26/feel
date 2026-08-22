@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 
 import CustomCursor from "./components/CustomCursor";
 import SmoothScroll from "./components/SmoothScroll";
+import Preloader from "./components/Preloader";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -42,6 +43,9 @@ export default function App() {
       <SmoothScroll />
       <CustomCursor />
       <RouteScroll />
+      {/* Mounted outside <Routes>, so it plays once per page load and never on
+          an in-app navigation. */}
+      <Preloader />
       <Nav theme={theme} onToggleTheme={toggle} />
       <Routes>
         <Route path="/" element={<Home />} />

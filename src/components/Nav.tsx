@@ -11,6 +11,8 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { Sun, Moon, Globe, List, X } from "@phosphor-icons/react";
 import MagneticButton from "./MagneticButton";
+import Wordmark from "./Wordmark";
+import { SOCIALS } from "../lib/socials";
 import type { Theme } from "../lib/useTheme";
 
 interface NavProps {
@@ -121,9 +123,12 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
         {/* Identity — wordmark only. */}
         <Link
           to="/"
-          className="cursor-hover-target shrink-0 font-display text-lg font-bold tracking-tight text-(--text)"
+          aria-label="Feelz Films, home"
+          // Landing target for the preloader hand-off.
+          data-nav-logo
+          className="cursor-hover-target shrink-0 text-(--text) transition-colors duration-300 hover:text-(--accent)"
         >
-          Feelz <span className="text-(--accent)">Films</span>
+          <Wordmark size="nav" />
         </Link>
 
         <span className="u-meta hidden lg:block text-(--text-secondary) shrink-0">
@@ -229,7 +234,24 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
                 Book a call
               </MagneticButton>
 
-              <span className="u-meta mt-5 flex items-center gap-1.5 text-(--text-secondary)">
+              <ul className="mt-6 flex items-center gap-2.5">
+                {SOCIALS.map(({ Icon, label, href }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      aria-label={label}
+                      onClick={() => setMenuOpen(false)}
+                      className="grid h-11 w-11 place-items-center rounded-full border border-(--hairline-strong) text-(--accent) transition-colors duration-300 hover:bg-(--accent) hover:text-(--accent-text)"
+                    >
+                      <Icon size={20} weight="fill" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              <span className="u-meta mt-6 flex items-center gap-1.5 text-(--text-secondary)">
                 <Globe size={14} />
                 India
               </span>

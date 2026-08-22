@@ -118,6 +118,54 @@
     border-top: 1px solid var(--hairline);
     margin: 0;
   }
+
+  /* ---------------------------------------------------------------
+     Rolling prism buttons
+     Two faces hinged along their shared top edge, rotated as one
+     rigid body. Pointing at the button rolls the front face down and
+     brings the accent face up, which is where the handle lives — the
+     motion does a job rather than just happening.
+     --------------------------------------------------------------- */
+  .prism {
+    perspective: 700px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .prism-body {
+    /* Must be a block: an inline box ignores height and preserve-3d. */
+    display: block;
+    position: relative;
+    height: var(--prism-h);
+    transform-style: preserve-3d;
+    transition: transform 0.62s var(--ease-out-premium);
+  }
+
+  .prism:hover .prism-body,
+  .prism:focus-visible .prism-body {
+    transform: rotateX(-90deg);
+  }
+
+  .prism-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    border-radius: 9999px;
+    /* Half the height: puts each face on the surface of the solid rather
+       than through its middle, so the two share one clean edge. */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .prism-front {
+    transform: translateZ(calc(var(--prism-h) / 2));
+  }
+
+  .prism-back {
+    transform: rotateX(90deg) translateZ(calc(var(--prism-h) / 2));
+  }
 }
 
 @layer utilities {
@@ -244,6 +292,9 @@ body::after {
 
 html {
   scrollbar-color: var(--accent) var(--bg-alt);
+  /* The preloader hides overflow while it's up. Reserving the gutter means
+     losing the scrollbar doesn't shunt the whole page sideways by 11px. */
+  scrollbar-gutter: stable;
 }
 ::-webkit-scrollbar {
   width: 11px;
@@ -330,6 +381,27 @@ html {
   .depth-cell:focus-within {
     transform: none;
     box-shadow: none;
+  }
+
+  /* No roll — the accent face just cross-fades in instead. */
+  .prism-body {
+    transition: none;
+  }
+  .prism:hover .prism-body,
+  .prism:focus-visible .prism-body {
+    transform: none;
+  }
+  .prism:hover .prism-front,
+  .prism:focus-visible .prism-front {
+    opacity: 0;
+  }
+  .prism:hover .prism-back,
+  .prism:focus-visible .prism-back {
+    transform: none;
+    opacity: 1;
+  }
+  .prism-back {
+    opacity: 0;
   }
 }
 

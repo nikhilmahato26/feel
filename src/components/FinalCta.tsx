@@ -2,6 +2,7 @@ import { Reveal } from "./Reveal";
 import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
 import Tilt3D from "./Tilt3D";
+import ScrollStage from "./ScrollStage";
 
 function CornerTick({ className }: { className: string }) {
   return (
@@ -19,6 +20,7 @@ function CornerTick({ className }: { className: string }) {
 export default function FinalCta() {
   return (
     <section className="py-24 md:py-32 border-b border-(--border)">
+      <ScrollStage amount={0.75}>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <Reveal y={36}>
           {/* Shallow angles only: the plate carries body copy, and copy on a
@@ -73,6 +75,7 @@ export default function FinalCta() {
           </Tilt3D>
         </Reveal>
       </div>
+      </ScrollStage>
     </section>
   );
 }

@@ -5,6 +5,7 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "mo
 import SectionHeader from "./SectionHeader";
 import YouTubeFrame from "./YouTubeFrame";
 import Tilt3D from "./Tilt3D";
+import ScrollStage from "./ScrollStage";
 
 interface Chapter {
   k: string;
@@ -56,6 +57,7 @@ export default function HowItWorks() {
 
   return (
     <section id="how-it-works" className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
+      <ScrollStage>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <SectionHeader
           index="02"
@@ -125,6 +127,7 @@ export default function HowItWorks() {
           ))}
         </div>
       </div>
+      </ScrollStage>
     </section>
   );
 }
