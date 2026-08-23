@@ -72,7 +72,7 @@ export default function Footer() {
           <div className="md:col-span-6">
             <Wordmark size="footer" label="Feelz Films" className="text-(--text)" />
             <p className="u-meta mt-3 text-(--text-secondary)">
-              Production House Pvt. Ltd.
+              Feelz Films Production House Pvt. Ltd.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-(--text-secondary) max-w-[30ch]">
               Marketing that turns expertise into authority, demand and growth.

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!-- Dev tool: trims the supplied client tiles to their artwork.
+
+     The originals are 1000x1000 with a lot of padding, which would leave every
+     mark floating small in a wide plate. This finds the bounding box of pixels
+     that differ from the tile's own corner colour, adds a small margin, and
+     re-encodes. The background colour is kept rather than keyed out, because the
+     wall paints each plate in that same colour — so the seam is invisible and
+     white-on-colour marks stay legible.
+
+     Output is written into the DOM as data URLs; tools/crop_logos.py picks them
+     up. That avoids screenshotting each crop at its own size.
+-->
+<html>
+<head><meta charset="utf-8"><style>body{font:12px monospace;background:#111;color:#8f8}</style></head>
+<body>
+<div id="out">working</div>
+<script>
+  const SLUGS = ["enable", "smartscale360", "unacademy", "mamaearth", "fobet-media",
+                 "college-vidya", "unicef", "client-08", "client-09", "bailey-group"];
+
+  const TOLERANCE = 26;   // per-channel distance from the corner colour
+  const MARGIN = 0.05;    // share of the crop's long edge, added on every side
+  const MAX_EDGE = 460;   // px, output cap
+
+  function load(src) {
+    return new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = rej;
+      i.src = src;
+    });
+  }
+
+  (async () => {
+    const out = document.getElementById("out");
+    out.textContent = "";
+
+    for (const slug of SLUGS) {
+      // Vite serves public/ at the root; a plain static server does not, so the
+      // base is passed in rather than assumed.
+      const base = new URLSearchParams(location.search).get("base") || "/clients/colour";
+      const img = await load(`${base}/${slug}.jpg`);
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const x = c.getContext("2d", { willReadFrequently: true });
+      x.drawImage(img, 0, 0);
+
+      const d = x.getImageData(0, 0, w, h).data;
+      const at = (px, py) => (py * w + px) * 4;
+      const bg = [d[0], d[1], d[2]];
+      const differs = (i) =>
+        Math.abs(d[i] - bg[0]) > TOLERANCE ||
+        Math.abs(d[i + 1] - bg[1]) > TOLERANCE ||
+        Math.abs(d[i + 2] - bg[2]) > TOLERANCE;
+
+      let x0 = w, y0 = h, x1 = 0, y1 = 0;
+      for (let py = 0; py < h; py++) {
+        for (let px = 0; px < w; px++) {
+          if (!differs(at(px, py))) continue;
+          if (px < x0) x0 = px;
+          if (px > x1) x1 = px;
+          if (py < y0) y0 = py;
+          if (py > y1) y1 = py;
+        }
+      }
+      if (x1 < x0) { x0 = 0; y0 = 0; x1 = w - 1; y1 = h - 1; }
+
+      let cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+      const pad = Math.round(Math.max(cw, ch) * MARGIN);
+      x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+      cw = Math.min(w - x0, cw + pad * 2); ch = Math.min(h - y0, ch + pad * 2);
+
+      const scale = Math.min(1, MAX_EDGE / Math.max(cw, ch));
+      const o = document.createElement("canvas");
+      o.width = Math.round(cw * scale);
+      o.height = Math.round(ch * scale);
+      const oc = o.getContext("2d");
+      oc.imageSmoothingQuality = "high";
+      // Paint the tile's own colour first, so the margin matches the artwork.
+      oc.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+      oc.fillRect(0, 0, o.width, o.height);
+      oc.drawImage(img, x0, y0, cw, ch, 0, 0, o.width, o.height);
+
+      const hex = "#" + bg.map((v) => v.toString(16).padStart(2, "0")).join("");
+      const pre = document.createElement("pre");
+      pre.dataset.slug = slug;
+      pre.dataset.bg = hex;
+      pre.dataset.size = `${o.width}x${o.height}`;
+      // PNG, not JPEG: these are flat-colour marks with crisp edges, and a
+      // lossless corner means the plate colour behind the tile matches exactly.
+      pre.textContent = o.toDataURL("image/png");
+      out.appendChild(pre);
+    }
+
+    document.title = "done";
+  })();
+</script>
+</body>
+</html>

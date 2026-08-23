@@ -82,6 +82,22 @@ export default function Preloader() {
     if (phase !== "loading") unlockScroll();
   }, [phase]);
 
+  // The nav's own logo is suppressed until the flight lands, otherwise two
+  // copies of the mark are on screen for the length of the travel. Flagged on
+  // the root so the nav needs no wiring; visibility is left alone because the
+  // hand-off measures that box to aim at, and a hidden box has no rect.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (phase === "done") {
+      delete root.dataset.preloading;
+      return;
+    }
+    root.dataset.preloading = "";
+    return () => {
+      delete root.dataset.preloading;
+    };
+  }, [phase]);
+
   useEffect(() => {
     // A refresh part-way down the page would otherwise be restored behind the
     // curtain, so the reveal would open on the middle of the site.
