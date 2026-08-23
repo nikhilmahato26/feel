@@ -5,12 +5,44 @@ import { useReducedMotion } from "motion/react";
 import { useScrollVelocityFactor } from "../lib/useScrollVelocityFactor";
 
 /**
- * Logo wall, wrapped onto a carousel. Real marks aren't in yet, so each face is
- * a reserved plate with its own index — a designed placeholder rather than a
- * dashed box with the word "logo" in it. Swap the inner mark for an <img>.
+ * Logo wall, wrapped onto a carousel.
+ *
+ * Every mark is drawn as a mask tinted by the page's text colour, not as a
+ * full-colour image. The supplied files each carried their own baked-in
+ * background — orange, red, mauve, two different blues — and ten saturated
+ * tiles would have fought both each other and the single accent this site
+ * runs on. One tone also makes the wall read as a set rather than as ten
+ * pasted screenshots, and it follows the theme for free.
+ *
+ * `scale` trims the box height per mark so a tall icon doesn't tower over a
+ * wide wordmark: optical balance, since bounding boxes alone don't give it.
  */
-const COUNT = 10;
+interface Client {
+  slug: string;
+  name: string;
+  scale?: number;
+}
+
+const CLIENTS: Client[] = [
+  { slug: "unacademy", name: "Unacademy" },
+  { slug: "mamaearth", name: "Mamaearth" },
+  { slug: "unicef", name: "UNICEF", scale: 0.8 },
+  { slug: "enable", name: "Enable" },
+  { slug: "college-vidya", name: "College Vidya", scale: 0.92 },
+  { slug: "smartscale360", name: "SmartScale360" },
+  { slug: "fobet-media", name: "Fobet Media", scale: 0.8 },
+  { slug: "bailey-group", name: "The Bailey Group", scale: 0.86 },
+  // TODO: names unconfirmed — the navy figure mark and the red bolt mark came
+  // through without any wordmark. Replace both `name` values once known; they
+  // are the alt text a screen reader announces.
+  { slug: "client-08", name: "Client", scale: 0.78 },
+  { slug: "client-09", name: "Client", scale: 0.78 },
+];
+
+const COUNT = CLIENTS.length;
 const FACE_W = 188; // px, before perspective
+const MARK_W = 140; // px, inside the plate's padding
+const MARK_H = 44; // px, at scale 1
 const BASE_SPEED = 5.4; // degrees per second at rest
 
 /** Radius that seats COUNT faces of FACE_W edge to edge around the cylinder. */
@@ -104,9 +136,9 @@ export default function ClientOrbit() {
             className="absolute inset-0"
             style={{ transformStyle: "preserve-3d", transform: "rotateX(-7deg)" }}
           >
-            {Array.from({ length: COUNT }, (_, i) => (
+            {CLIENTS.map((c, i) => (
               <div
-                key={i}
+                key={c.slug}
                 ref={(el) => {
                   faceRefs.current[i] = el;
                 }}
@@ -117,16 +149,26 @@ export default function ClientOrbit() {
                   backfaceVisibility: "hidden",
                 }}
               >
-                <div className="flex items-center justify-center gap-3 rounded-xl border border-(--hairline-strong) bg-(--surface) px-5 py-5 shadow-[var(--shadow-sm)]">
+                <div className="flex h-24 items-center justify-center rounded-xl border border-(--hairline-strong) bg-(--surface) px-6 shadow-[var(--shadow-sm)]">
                   <span
-                    aria-hidden
-                    className="grid h-7 w-7 place-items-center rounded-[3px] border border-(--hairline-strong)"
-                  >
-                    <span className="h-2 w-2 rounded-[1px] bg-(--accent)" />
-                  </span>
-                  <span className="u-meta whitespace-nowrap text-(--text-secondary)">
-                    Client {String(i + 1).padStart(2, "0")}
-                  </span>
+                    role="img"
+                    aria-label={c.name}
+                    title={c.name}
+                    className="block text-(--text-secondary)"
+                    style={{
+                      width: MARK_W,
+                      height: Math.round(MARK_H * (c.scale ?? 1)),
+                      backgroundColor: "currentColor",
+                      maskImage: `url(/clients/${c.slug}.png)`,
+                      WebkitMaskImage: `url(/clients/${c.slug}.png)`,
+                      maskRepeat: "no-repeat",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskPosition: "center",
+                      WebkitMaskPosition: "center",
+                      maskSize: "contain",
+                      WebkitMaskSize: "contain",
+                    }}
+                  />
                 </div>
               </div>
             ))}
