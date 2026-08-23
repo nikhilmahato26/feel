@@ -8,43 +8,49 @@ import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
 import { SOCIALS } from "../lib/socials";
 
-interface Panel {
-  label: string;
-  rows: string[];
-  /** Placement inside the 3D stage, in px, before the responsive scale. */
+/** Placement inside the 3D stage, in px, before the responsive scale. */
+interface Slot {
   x: number;
   y: number;
   z: number;
   ry: number;
-  w: number;
-  accent?: boolean;
-  /** Seconds for one float cycle — varied so panels never bob in lockstep. */
+  /** Seconds for one float cycle — varied so cards never bob in lockstep. */
   float: number;
+  accent?: boolean;
 }
 
 /**
- * The offer stack, arranged as depth rather than as a list. Deliberately no
- * figures on these panels: invented metrics would read as client results.
+ * The stage holds the social accounts, arranged as depth rather than as a row.
+ * Placements are chosen per count so the composition stays balanced whether two
+ * or three accounts are live — add a fourth entry to SOCIALS and give it a slot
+ * here. The first card carries the accent fill.
  */
-const PANELS: Panel[] = [
-  {
-    label: "Content engine",
-    rows: ["Positioning", "Production", "Distribution"],
-    x: 0,
-    y: 8,
-    z: 130,
-    ry: -6,
-    w: 254,
-    accent: true,
-    float: 7.5,
-  },
-  { label: "Short-form", rows: ["Hooks", "Cutdowns"], x: -168, y: -128, z: 30, ry: 16, w: 168, float: 9 },
-  { label: "Long-form", rows: ["YouTube", "Podcast"], x: 176, y: -74, z: 60, ry: -18, w: 168, float: 8.2 },
-  { label: "Demand", rows: ["Inbound", "Pipeline"], x: -104, y: 168, z: 78, ry: 10, w: 176, float: 10 },
-];
+const SLOTS: Record<number, Slot[]> = {
+  1: [{ x: 0, y: 0, z: 120, ry: -6, float: 7.5, accent: true }],
+  2: [
+    { x: -104, y: -74, z: 120, ry: -6, float: 7.5, accent: true },
+    { x: 118, y: 96, z: 40, ry: 14, float: 9.2 },
+  ],
+  3: [
+    { x: -118, y: -128, z: 60, ry: 14, float: 9 },
+    { x: 96, y: -18, z: 130, ry: -8, float: 7.5, accent: true },
+    { x: -76, y: 150, z: 50, ry: 10, float: 10.2 },
+  ],
+};
 
-function StagePanel({ panel, reduce }: { panel: Panel; reduce: boolean | null }) {
-  const { label, rows, x, y, z, ry, w, accent, float } = panel;
+const CARD_W = 196;
+
+function SocialCard({
+  social,
+  slot,
+  reduce,
+}: {
+  social: (typeof SOCIALS)[number];
+  slot: Slot;
+  reduce: boolean | null;
+}) {
+  const { Icon, label, handle, href } = social;
+  const { x, y, z, ry, float, accent } = slot;
 
   return (
     <div
@@ -54,48 +60,55 @@ function StagePanel({ panel, reduce }: { panel: Panel; reduce: boolean | null })
         // never fight over the same property.
         transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${ry}deg) rotateX(2deg)`,
         transformStyle: "preserve-3d",
-        width: w,
+        width: CARD_W,
       }}
     >
       <motion.div
         animate={reduce ? undefined : { y: [0, -11, 0] }}
         transition={{ duration: float, repeat: Infinity, ease: "easeInOut" }}
-        className={`rounded-xl border p-4 ${
-          accent
-            ? "border-transparent text-(--hero-text)"
-            : "border-(--hairline-strong) bg-(--surface)/85 backdrop-blur-md"
-        }`}
-        style={{
-          boxShadow: accent ? "0 30px 60px -24px rgba(42,86,232,0.6)" : "var(--shadow-md)",
-          background: accent
-            ? "linear-gradient(150deg, var(--color-accent), var(--color-accent-2))"
-            : undefined,
-        }}
       >
-        <div className="flex items-center justify-between gap-3">
-          <span className={`u-meta ${accent ? "" : "text-(--text-secondary)"}`}>{label}</span>
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer noopener"
+          aria-label={`${label} — ${handle}`}
+          className={`cursor-hover-target block rounded-xl border p-4 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 ${
+            accent
+              ? "border-transparent text-(--hero-text)"
+              : "border-(--hairline-strong) bg-(--surface)/85 text-(--text) backdrop-blur-md"
+          }`}
+          style={{
+            boxShadow: accent ? "0 30px 60px -24px rgba(42,86,232,0.6)" : "var(--shadow-md)",
+            background: accent
+              ? "linear-gradient(150deg, var(--color-accent), var(--color-accent-2))"
+              : undefined,
+          }}
+        >
+          {/* Decorative throughout: the link's aria-label is the accessible
+              name, so nothing here gets announced twice. */}
+          <span aria-hidden className="flex items-center justify-between gap-3">
+            <Icon
+              size={24}
+              weight="fill"
+              className={accent ? "text-(--hero-text)" : "text-(--accent)"}
+            />
+            <ArrowUpRight
+              size={15}
+              weight="bold"
+              className={accent ? "text-(--hero-text)/80" : "text-(--text-secondary)"}
+            />
+          </span>
+
+          <span aria-hidden className="mt-5 block text-sm font-semibold">
+            {label}
+          </span>
           <span
             aria-hidden
-            className={`h-1.5 w-1.5 rounded-full ${accent ? "bg-(--hero-text)" : "bg-(--accent)"}`}
-          />
-        </div>
-
-        <ul className="mt-4 space-y-2.5">
-          {rows.map((r, i) => (
-            <li key={r} className="flex items-center gap-2.5">
-              <span
-                aria-hidden
-                className={`h-px flex-none ${accent ? "bg-(--hero-text)/70" : "bg-(--accent)"}`}
-                style={{ width: 14 + i * 8 }}
-              />
-              <span
-                className={`text-[0.8125rem] font-medium ${accent ? "" : "text-(--text-secondary)"}`}
-              >
-                {r}
-              </span>
-            </li>
-          ))}
-        </ul>
+            className={`u-meta mt-1 block ${accent ? "opacity-80" : "text-(--text-secondary)"}`}
+          >
+            {handle}
+          </span>
+        </a>
       </motion.div>
     </div>
   );
@@ -143,6 +156,10 @@ export default function Hero() {
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.65, delay, ease: [0.16, 1, 0.3, 1] as const },
   });
+
+  // Three slots are laid out; fewer accounts fall back to a balanced pair.
+  const cards = SOCIALS.slice(0, 3);
+  const slots = SLOTS[cards.length] ?? SLOTS[3];
 
   return (
     <section
@@ -223,57 +240,14 @@ export default function Hero() {
             </MagneticButton>
           </motion.div>
 
-          {/* ---- Social presence ----
-              Held one step below the primary CTA: accent marks and full-strength
-              labels on a drawn button, filling with accent on hover. Prominent,
-              without competing with "Book a call" for the solid-fill slot. */}
-          <motion.div {...rise(0.92)} className="mt-14 border-t border-(--hairline) pt-8">
-            <div className="flex items-center gap-3">
-              <span className="u-meta text-(--accent)">Follow along</span>
-              <span aria-hidden className="h-px flex-1 max-w-20 bg-(--hairline)" />
-            </div>
-
-            <ul className="mt-5 flex flex-wrap items-center gap-3">
-              {SOCIALS.map(({ Icon, label, handle, href }) => (
-                <li key={label}>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label={`${label} — ${handle}`}
-                    className="prism cursor-hover-target block w-44"
-                    style={{ ["--prism-h" as string]: "3.5rem" }}
-                  >
-                    {/* Both faces are decorative: the link's aria-label is the
-                        accessible name, so neither gets read twice. */}
-                    <span className="prism-body">
-                      <span
-                        aria-hidden
-                        className="prism-face prism-front border border-(--hairline-strong) bg-(--bg) text-(--text)"
-                      >
-                        <Icon size={22} weight="fill" className="text-(--accent)" />
-                        <span className="text-sm font-semibold">{label}</span>
-                      </span>
-
-                      <span
-                        aria-hidden
-                        className="prism-face prism-back bg-(--accent) text-(--accent-text) shadow-[0_18px_34px_-18px_rgba(42,86,232,0.85)]"
-                      >
-                        <span className="u-meta">{handle}</span>
-                        <ArrowUpRight size={15} weight="bold" />
-                      </span>
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
+          {/* The social accounts used to sit here as a "Follow along" row. They
+              now carry the stage on the right, so repeating them in the same
+              viewport would be saying it twice. */}
         </motion.div>
 
-        {/* ---- The stage ---- */}
+        {/* ---- The stage: the social accounts, floating ---- */}
         <motion.div
           {...rise(0.35)}
-          aria-hidden
           className="relative h-[24rem] sm:h-[28rem] lg:h-[32rem]"
           style={{ perspective: "1150px" }}
         >
@@ -281,8 +255,8 @@ export default function Hero() {
             className="absolute inset-0 scale-[0.62] sm:scale-[0.78] lg:scale-100"
             style={{ transformStyle: "preserve-3d", rotateX, rotateY, z: stageZ }}
           >
-            {PANELS.map((p) => (
-              <StagePanel key={p.label} panel={p} reduce={reduce} />
+            {cards.map((s, i) => (
+              <SocialCard key={s.label} social={s} slot={slots[i]} reduce={reduce} />
             ))}
 
             {/* Ground shadow, anchoring the stack to the floor. */}

@@ -132,7 +132,7 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
         </Link>
 
         <span className="u-meta hidden lg:block text-(--text-secondary) shrink-0">
-          Marketing_partner
+          Content_partners
         </span>
 
         {/* Centred capsule — the page index, held in its own pill. */}
