@@ -10,6 +10,8 @@ interface VideoCardProps {
   label: string;
   /** Two-digit slot index shown in the frame's top-left corner. */
   index: string;
+  /** Duration in the frame's top-right corner. Left blank until footage lands. */
+  runtime?: string;
   className?: string;
   featured?: boolean;
 }
@@ -22,7 +24,13 @@ interface VideoCardProps {
  * On a fine pointer the play affordance detaches and trails the cursor inside
  * the frame; on touch it stays centred where a thumb expects it.
  */
-export default function VideoCard({ label, index, className = "", featured = false }: VideoCardProps) {
+export default function VideoCard({
+  label,
+  index,
+  runtime = "--:--",
+  className = "",
+  featured = false,
+}: VideoCardProps) {
   const ref = useRef<HTMLButtonElement>(null);
   const isFine = useFinePointer();
   const reduce = useReducedMotion();
@@ -75,10 +83,10 @@ export default function VideoCard({ label, index, className = "", featured = fal
         }}
       />
 
-      {/* Slate metadata */}
-      <span className="absolute top-3 left-3 u-index text-(--text-secondary) opacity-55">{index}</span>
-      <span className="absolute top-3 right-3 u-meta text-(--text-secondary) opacity-40 tabular-nums">
-        --:--
+      {/* Frame metadata */}
+      <span className="absolute top-3 left-3 u-index text-(--text-secondary) opacity-75">{index}</span>
+      <span className="absolute top-3 right-3 u-meta text-(--text-secondary) opacity-70 tabular-nums">
+        {runtime}
       </span>
 
       <span className="relative z-10 flex h-full flex-col items-center justify-center gap-3 px-4 py-8 text-center">

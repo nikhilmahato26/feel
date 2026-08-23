@@ -3,10 +3,17 @@
 import { useRef } from "react";
 import type { ReactNode, MouseEvent } from "react";
 import { motion, useMotionValue, useSpring } from "motion/react";
+import { Link } from "react-router-dom";
 import { useFinePointer } from "../lib/useFinePointer";
 
+/** Router-aware variant, so internal buttons don't reload the document. */
+const MotionLink = motion.create(Link);
+
 interface MagneticButtonProps {
-  href: string;
+  /** External or protocol link (mailto:, https:). Use `to` for in-app routes. */
+  href?: string;
+  /** In-app route path, e.g. "/portfolio". Takes precedence over `href`. */
+  to?: string;
   children: ReactNode;
   variant?: "primary" | "secondary" | "inverted";
   className?: string;
@@ -23,6 +30,7 @@ const variantClasses: Record<string, string> = {
 
 export default function MagneticButton({
   href,
+  to,
   children,
   variant = "primary",
   className = "",
@@ -46,16 +54,25 @@ export default function MagneticButton({
     y.set(0);
   }
 
+  const shared = {
+    ref,
+    onMouseMove: handleMove,
+    onMouseLeave: handleLeave,
+    style: { x: springX, y: springY },
+    whileTap: { scale: 0.96 },
+    className: `cursor-hover-target inline-flex items-center justify-center rounded-xl px-7 py-3.5 text-[15px] font-semibold whitespace-nowrap transition-[box-shadow,background-color,border-color,color] duration-300 ${variantClasses[variant]} ${className}`,
+  } as const;
+
+  if (to) {
+    return (
+      <MotionLink to={to} {...shared}>
+        {children}
+      </MotionLink>
+    );
+  }
+
   return (
-    <motion.a
-      ref={ref}
-      href={href}
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      style={{ x: springX, y: springY }}
-      whileTap={{ scale: 0.96 }}
-      className={`cursor-hover-target inline-flex items-center justify-center rounded-xl px-7 py-3.5 text-[15px] font-semibold whitespace-nowrap transition-[box-shadow,background-color,border-color,color] duration-300 ${variantClasses[variant]} ${className}`}
-    >
+    <motion.a href={href} {...shared}>
       {children}
     </motion.a>
   );

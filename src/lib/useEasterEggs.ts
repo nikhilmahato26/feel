@@ -19,7 +19,7 @@ export function useEasterEggs(onToggleTheme: () => void) {
 
   useEffect(() => {
     console.log(
-      "%cFEELZ FILMS%c\nYour expertise deserves to be seen.\n\nPress T to flip the lights.\nHiring or collaborating? connect@feelzfilms.com",
+      "%cFEELZ FILMS%c\nMarketing that makes expertise impossible to ignore.\n\nPress T to flip the lights.\nHiring or collaborating? connect@feelzfilms.com",
       "font: 700 22px/1.1 system-ui; color:#2A56E8; letter-spacing:-0.02em",
       "font: 12px/1.6 ui-monospace, monospace; color:#8a91a3",
     );

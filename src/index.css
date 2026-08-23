@@ -4,8 +4,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-  --font-display: "Outfit", system-ui, sans-serif;
-  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --ease-out-premium: cubic-bezier(0.16, 1, 0.3, 1);
@@ -88,18 +88,18 @@
 @layer components {
   .u-meta {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1;
   }
 
   .u-index {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     font-variant-numeric: tabular-nums;
     line-height: 1;
   }
@@ -117,6 +117,54 @@
     border: 0;
     border-top: 1px solid var(--hairline);
     margin: 0;
+  }
+
+  /* ---------------------------------------------------------------
+     Rolling prism buttons
+     Two faces hinged along their shared top edge, rotated as one
+     rigid body. Pointing at the button rolls the front face down and
+     brings the accent face up, which is where the handle lives — the
+     motion does a job rather than just happening.
+     --------------------------------------------------------------- */
+  .prism {
+    perspective: 700px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .prism-body {
+    /* Must be a block: an inline box ignores height and preserve-3d. */
+    display: block;
+    position: relative;
+    height: var(--prism-h);
+    transform-style: preserve-3d;
+    transition: transform 0.62s var(--ease-out-premium);
+  }
+
+  .prism:hover .prism-body,
+  .prism:focus-visible .prism-body {
+    transform: rotateX(-90deg);
+  }
+
+  .prism-face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    border-radius: 9999px;
+    /* Half the height: puts each face on the surface of the solid rather
+       than through its middle, so the two share one clean edge. */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .prism-front {
+    transform: translateZ(calc(var(--prism-h) / 2));
+  }
+
+  .prism-back {
+    transform: rotateX(90deg) translateZ(calc(var(--prism-h) / 2));
   }
 }
 
@@ -141,6 +189,44 @@
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-md);
+  }
+
+  /* ---------------------------------------------------------------
+     Depth
+     A grid gets one shared vanishing point, and its cells lift out of
+     the page toward the reader. One scene per grid, so cells at the
+     edges catch the perspective and read as physically placed.
+     --------------------------------------------------------------- */
+  .depth-scene {
+    perspective: 1400px;
+    perspective-origin: 50% 45%;
+  }
+
+  .depth-cell {
+    transition:
+      transform 0.65s var(--ease-out-premium),
+      box-shadow 0.65s var(--ease-out-premium),
+      background-color 0.5s var(--ease-out-premium);
+  }
+
+  /* focus-within keeps the lift reachable from the keyboard. */
+  .depth-cell:hover,
+  .depth-cell:focus-within {
+    transform: translateZ(44px);
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+  }
+
+  /* Hover-reveal service lists. Without a hovering pointer there is no way to
+     trigger them, so on touch the list is simply always open. */
+  @media (hover: none) {
+    .svc-list {
+      opacity: 1;
+      transform: none;
+    }
+    .svc-watermark {
+      opacity: 0;
+    }
   }
 
   /* Underline that wipes in from the left and out to the right. */
@@ -206,6 +292,9 @@ body::after {
 
 html {
   scrollbar-color: var(--accent) var(--bg-alt);
+  /* The preloader hides overflow while it's up. Reserving the gutter means
+     losing the scrollbar doesn't shunt the whole page sideways by 11px. */
+  scrollbar-gutter: stable;
 }
 ::-webkit-scrollbar {
   width: 11px;
@@ -250,17 +339,18 @@ html {
   animation-play-state: paused;
 }
 
-/* Sprocket holes running down the plate edge, as film advances. */
-@keyframes film-advance {
+/* The hero floor, drifting toward the viewer so the depth reads as space
+   rather than as a static backdrop. One tile of travel keeps it seamless. */
+@keyframes grid-drift {
   from {
-    transform: translateY(0);
+    background-position: 0 0;
   }
   to {
-    transform: translateY(-50%);
+    background-position: 0 72px;
   }
 }
-.film-advance {
-  animation: film-advance 3.2s linear infinite;
+.grid-drift {
+  animation: grid-drift 3.6s linear infinite;
 }
 
 @keyframes orb-float {
@@ -280,8 +370,38 @@ html {
   .marquee-left,
   .marquee-right,
   .orb-float,
-  .film-advance {
+  .grid-drift {
     animation: none !important;
+  }
+
+  .depth-cell {
+    transition: none;
+  }
+  .depth-cell:hover,
+  .depth-cell:focus-within {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* No roll — the accent face just cross-fades in instead. */
+  .prism-body {
+    transition: none;
+  }
+  .prism:hover .prism-body,
+  .prism:focus-visible .prism-body {
+    transform: none;
+  }
+  .prism:hover .prism-front,
+  .prism:focus-visible .prism-front {
+    opacity: 0;
+  }
+  .prism:hover .prism-back,
+  .prism:focus-visible .prism-back {
+    transform: none;
+    opacity: 1;
+  }
+  .prism-back {
+    opacity: 0;
   }
 }
 

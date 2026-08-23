@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useMotionValueEvent, useSpring } from "motion/react";
-import { Sun, Moon, Globe } from "@phosphor-icons/react";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+  useSpring,
+} from "motion/react";
+import { Link, useLocation } from "react-router-dom";
+import { Sun, Moon, Globe, List, X } from "@phosphor-icons/react";
 import MagneticButton from "./MagneticButton";
+import Wordmark from "./Wordmark";
+import { SOCIALS } from "../lib/socials";
 import type { Theme } from "../lib/useTheme";
 
 interface NavProps {
@@ -11,10 +20,14 @@ interface NavProps {
   onToggleTheme: () => void;
 }
 
+/**
+ * Two in-page anchors and one route. Anchors are written absolute ("/#about")
+ * so they also work from the portfolio page, where those sections don't exist.
+ */
 const links = [
-  { href: "#about", label: "About" },
-  { href: "#services", label: "Services" },
-  { href: "#portfolio", label: "Portfolio" },
+  { to: "/#about", section: "#about", label: "About" },
+  { to: "/#services", section: "#services", label: "Services" },
+  { to: "/portfolio", section: null, label: "Portfolio" },
 ];
 
 /** Marks the link whose section currently owns the viewport. */
@@ -24,14 +37,17 @@ function isOutOfBand(el: Element) {
   return r.bottom < mid || r.top > mid;
 }
 
-function useActiveSection(ids: string[]) {
+function useActiveSection(ids: string[], routeKey: string) {
   const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
     const targets = ids
       .map((id) => document.querySelector(id))
       .filter((el): el is Element => el !== null);
-    if (!targets.length) return;
+    if (!targets.length) {
+      setActive(null);
+      return;
+    }
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -51,26 +67,50 @@ function useActiveSection(ids: string[]) {
 
     targets.forEach((t) => io.observe(t));
     return () => io.disconnect();
-  }, [ids]);
+    // routeKey re-runs this after a navigation, when the sections have changed.
+  }, [ids, routeKey]);
 
   return active;
 }
 
-const IDS = links.map((l) => l.href);
+const IDS = links.map((l) => l.section).filter((s): s is string => s !== null);
 
 export default function Nav({ theme, onToggleTheme }: NavProps) {
+  const { pathname } = useLocation();
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 180, damping: 30, mass: 0.3 });
   const lastY = useRef(0);
   const [hidden, setHidden] = useState(false);
   const [elevated, setElevated] = useState(false);
-  const active = useActiveSection(IDS);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const active = useActiveSection(IDS, pathname);
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setElevated(y > 60);
-    setHidden(y > lastY.current && y > 160);
+    // Keep the bar pinned while the mobile sheet is open, otherwise it can
+    // slide away with the menu still mounted.
+    setHidden(!menuOpen && y > lastY.current && y > 160);
     lastY.current = y;
   });
+
+  // Close on escape and whenever we cross back into the desktop layout.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = () => mq.matches && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onChange);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onChange);
+    };
+  }, [menuOpen]);
+
+  const isCurrent = (l: (typeof links)[number]) =>
+    l.section ? pathname === "/" && active === l.section : pathname === l.to;
 
   return (
     <motion.nav
@@ -79,65 +119,146 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
       className="sticky top-0 z-50 border-b border-(--border) bg-(--bg)/85 backdrop-blur-xl transition-shadow duration-300"
       style={{ boxShadow: elevated ? "var(--shadow-sm)" : "none" }}
     >
-      <div className="relative flex items-center justify-between gap-6 px-6 py-4 md:px-8">
-        {/* Identity, set as a stacked micro-block rather than a single lockup. */}
-        <a href="#" className="cursor-hover-target shrink-0 leading-[1.5]">
-          <span className="u-meta block text-(--text)">
-            Feelz <span className="text-(--accent)">Films</span>
-          </span>
-          <span className="u-meta block text-(--text-secondary) opacity-60">We turn expertise</span>
-          <span className="u-meta block text-(--text-secondary) opacity-60">into authority</span>
-        </a>
+      <div className="relative flex items-center justify-between gap-4 px-6 py-4 md:gap-6 md:px-8">
+        {/* Identity — wordmark only. */}
+        <Link
+          to="/"
+          aria-label="Feelz Films, home"
+          // Landing target for the preloader hand-off.
+          data-nav-logo
+          className="cursor-hover-target shrink-0 text-(--text) transition-colors duration-300 hover:text-(--accent)"
+        >
+          <Wordmark size="nav" />
+        </Link>
 
-        <span className="u-meta hidden lg:block text-(--text-secondary) opacity-70 shrink-0">
-          Content_partner
+        <span className="u-meta hidden lg:block text-(--text-secondary) shrink-0">
+          Marketing_partner
         </span>
 
         {/* Centred capsule — the page index, held in its own pill. */}
         <div className="hidden md:flex items-center gap-1 rounded-full border border-(--hairline-strong) p-1 shrink-0">
           {links.map((l) => {
-            const isActive = active === l.href;
+            const current = isCurrent(l);
             return (
-              <a
-                key={l.href}
-                href={l.href}
-                aria-current={isActive ? "true" : undefined}
+              <Link
+                key={l.to}
+                to={l.to}
+                aria-current={current ? "page" : undefined}
                 className={`cursor-hover-target u-meta rounded-full px-3.5 py-2 transition-colors duration-300 ${
-                  isActive
+                  current
                     ? "bg-(--accent) text-(--accent-text)"
                     : "text-(--text-secondary) hover:text-(--text)"
                 }`}
               >
                 {l.label}
-              </a>
+              </Link>
             );
           })}
         </div>
 
-        <span className="u-meta hidden lg:flex items-center gap-1.5 text-(--text-secondary) opacity-70 shrink-0">
-          <Globe size={13} />
-          New Delhi,India
+        <span className="u-meta hidden lg:flex items-center gap-1.5 text-(--text-secondary) shrink-0">
+          <Globe size={14} />
+          India
         </span>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
           <button
             onClick={onToggleTheme}
             aria-label="Toggle dark mode"
             title="Toggle theme (T)"
-            className="cursor-hover-target flex items-center gap-2 rounded-full border border-(--border) px-3.5 py-2 hover:border-(--accent) hover:text-(--accent) active:scale-95 transition-[border-color,color,transform] duration-200"
+            className="cursor-hover-target flex items-center gap-2 rounded-full border border-(--border) px-3.5 py-2 text-(--text) hover:border-(--accent) hover:text-(--accent) active:scale-95 transition-[border-color,color,transform] duration-200"
           >
-            {theme === "dark" ? <Moon size={14} weight="fill" /> : <Sun size={14} />}
+            {theme === "dark" ? <Moon size={15} weight="fill" /> : <Sun size={15} />}
             <span className="u-meta hidden sm:inline">{theme === "dark" ? "Dark" : "Light"}</span>
           </button>
+
           <MagneticButton
             href="mailto:connect@feelzfilms.com?subject=Book%20a%20call"
             variant="primary"
-            className="rounded-full"
+            className="hidden sm:inline-flex rounded-full"
           >
             Book a call
           </MagneticButton>
+
+          {/* Mobile trigger — the links live behind this below md. */}
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            className="cursor-hover-target md:hidden flex items-center justify-center rounded-full border border-(--border) p-2.5 text-(--text) hover:border-(--accent) hover:text-(--accent) active:scale-95 transition-[border-color,color,transform] duration-200"
+          >
+            {menuOpen ? <X size={17} weight="bold" /> : <List size={17} weight="bold" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile sheet. */}
+      <AnimatePresence initial={false}>
+        {menuOpen && (
+          <motion.div
+            id="mobile-nav"
+            key="mobile-nav"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="md:hidden overflow-hidden border-t border-(--hairline)"
+          >
+            <div className="flex flex-col px-6 pb-6 pt-2">
+              {links.map((l, i) => {
+                const current = isCurrent(l);
+                return (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={() => setMenuOpen(false)}
+                    aria-current={current ? "page" : undefined}
+                    className={`u-meta flex items-center justify-between border-b border-(--hairline) py-4 transition-colors duration-200 ${
+                      current ? "text-(--accent)" : "text-(--text)"
+                    }`}
+                  >
+                    {l.label}
+                    <span className="u-index text-(--text-secondary)">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </Link>
+                );
+              })}
+
+              <MagneticButton
+                href="mailto:connect@feelzfilms.com?subject=Book%20a%20call"
+                variant="primary"
+                className="mt-6 w-full rounded-full sm:hidden"
+              >
+                Book a call
+              </MagneticButton>
+
+              <ul className="mt-6 flex items-center gap-2.5">
+                {SOCIALS.map(({ Icon, label, href }) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      aria-label={label}
+                      onClick={() => setMenuOpen(false)}
+                      className="grid h-11 w-11 place-items-center rounded-full border border-(--hairline-strong) text-(--accent) transition-colors duration-300 hover:bg-(--accent) hover:text-(--accent-text)"
+                    >
+                      <Icon size={20} weight="fill" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              <span className="u-meta mt-6 flex items-center gap-1.5 text-(--text-secondary)">
+                <Globe size={14} />
+                India
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Reading progress, drawn on the nav's own bottom rule. */}
       <motion.div
