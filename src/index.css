@@ -217,18 +217,6 @@
     z-index: 1;
   }
 
-  /* Hover-reveal service lists. Without a hovering pointer there is no way to
-     trigger them, so on touch the list is simply always open. */
-  @media (hover: none) {
-    .svc-list {
-      opacity: 1;
-      transform: none;
-    }
-    .svc-watermark {
-      opacity: 0;
-    }
-  }
-
   /* Underline that wipes in from the left and out to the right. */
   .link-wipe {
     position: relative;

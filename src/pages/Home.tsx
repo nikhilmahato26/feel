@@ -1,5 +1,5 @@
 import Hero from "../components/Hero";
-import ClientOrbit from "../components/ClientOrbit";
+import ClientMarquee from "../components/ClientMarquee";
 import About from "../components/About";
 import HowItWorks from "../components/HowItWorks";
 import Services from "../components/Services";
@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <main>
       <Hero />
-      <ClientOrbit />
+      <ClientMarquee />
       <About />
       <HowItWorks />
       <Services />

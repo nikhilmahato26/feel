@@ -109,7 +109,7 @@ export default function Services() {
           index="03"
           label="Services"
           title="One integrated marketing system."
-          lede="Five disciplines, one team, one thread running through all of them. Hover a box for what sits inside it."
+          lede="Five disciplines, one team, one thread running through all of them."
           className="mb-16 md:mb-20"
         />
 
@@ -122,46 +122,39 @@ export default function Services() {
               {/* Focusable so the list is reachable without a pointer; the
                   reveal keys off :focus-within as well as :hover. */}
               <article
-                tabIndex={0}
                 aria-label={s.title}
-                className="depth-cell group relative flex h-full min-h-80 flex-col overflow-hidden rounded-2xl p-7 text-(--hero-text) md:p-8"
+                className="depth-cell group relative h-full overflow-hidden rounded-2xl text-(--hero-text)"
                 style={{
                   background:
                     "linear-gradient(155deg, var(--color-accent), var(--color-accent-2))",
                 }}
               >
-                {/* Oversized index filling the lower half, traded for the list
-                    on hover so the collapsed box isn't half empty. */}
-                <span
-                  aria-hidden
-                  className="svc-watermark pointer-events-none absolute -bottom-8 -right-2 font-display text-[9rem] font-extrabold leading-none tracking-[-0.05em] text-white/10 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-0 group-focus-within:opacity-0"
-                >
-                  {s.k}
-                </span>
+                {/* Everything is on show; hovering pushes in on it rather than
+                    revealing it. The scale lives on this inner wrapper so the
+                    card's own corners stay put and crop the zoom. */}
+                <div className="flex h-full min-h-80 flex-col p-7 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06] md:p-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="u-index text-white/75">{s.k}</span>
+                    <s.Icon size={22} weight="light" className="text-white/80" />
+                  </div>
 
-                <div className="relative z-10 flex items-start justify-between gap-4">
-                  <span className="u-index text-white/75">{s.k}</span>
-                  <s.Icon size={22} weight="light" className="text-white/80" />
+                  <h3 className="mt-8 font-display text-xl font-bold tracking-[-0.02em] md:text-[1.4rem]">
+                    {s.title}
+                  </h3>
+
+                  {s.lede ? (
+                    <p className="mt-2.5 text-sm leading-relaxed text-white/80">{s.lede}</p>
+                  ) : null}
+
+                  <ul className="mt-6 space-y-2.5">
+                    {s.items.map((it) => (
+                      <li key={it} className="flex items-center gap-3 text-sm text-white/90">
+                        <span aria-hidden className="h-px w-3 flex-none bg-white/60" />
+                        {it}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                <h3 className="relative z-10 mt-8 font-display text-xl font-bold tracking-[-0.02em] md:text-[1.4rem]">
-                  {s.title}
-                </h3>
-
-                {s.lede ? (
-                  <p className="relative z-10 mt-2.5 text-sm leading-relaxed text-white/80">
-                    {s.lede}
-                  </p>
-                ) : null}
-
-                <ul className="svc-list relative z-10 mt-6 space-y-2.5 opacity-0 translate-y-2 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0">
-                  {s.items.map((it) => (
-                    <li key={it} className="flex items-center gap-3 text-sm text-white/90">
-                      <span aria-hidden className="h-px w-3 flex-none bg-white/60" />
-                      {it}
-                    </li>
-                  ))}
-                </ul>
               </article>
             </RevealItem>
           ))}

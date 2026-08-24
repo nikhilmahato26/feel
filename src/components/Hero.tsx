@@ -16,6 +16,10 @@ import MagneticButton from "./MagneticButton";
 import { LOGO_RATIO, logoMaskStyle } from "../lib/brand";
 import { SOCIALS } from "../lib/socials";
 
+/** Copies of the mask stacked in Z, and the gap between them, in px. */
+const MARK_LAYERS = 14;
+const LAYER_GAP = 2.6;
+
 export default function Hero() {
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
@@ -103,32 +107,70 @@ export default function Hero() {
             className="orb-float pointer-events-none absolute -top-24 -left-20 h-96 w-96 rounded-full opacity-[0.16]"
           />
 
-          {/* The mark. Tilts with the pointer and lifts toward the reader; the
-              preloader hands its own copy off to this exact element. */}
+          {/* The mark, as a solid rather than a sticker: the same mask stacked
+              in depth, front face white and each layer behind it mixed further
+              into the plate so the sides read as shadow. Tilting with the
+              pointer is what sells the thickness. */}
           <div
             className="relative z-10 flex h-full items-center justify-center px-8 py-20 lg:py-24"
-            style={{ perspective: "1100px" }}
+            style={{ perspective: "1000px" }}
           >
             <motion.div
               style={{ transformStyle: "preserve-3d", rotateX, rotateY, y: markY }}
               initial={reduce ? false : { opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-84"
+              className="relative w-full max-w-84"
             >
-              {/* Filled with currentColor rather than the variable directly, so
-                  the element's computed `color` is white too — that's the value
-                  the preloader reads to know what colour to land in. */}
-              <motion.span
-                data-hero-logo
-                role="img"
-                aria-label="Feelz Films"
-                className="block w-full text-(--hero-text)"
-                style={{
-                  aspectRatio: LOGO_RATIO,
-                  ...logoMaskStyle("currentColor"),
-                  z: markZ,
-                }}
+              {/* Two planes at different depths. With the pointer moving, the
+                  parallax between them and the mark is what reads as space. */}
+              <span
+                aria-hidden
+                className="absolute rounded-lg border border-(--hero-text)/25"
+                style={{ inset: "-14% -9%", transform: "translateZ(-70px)" }}
+              />
+              <span
+                aria-hidden
+                className="absolute rounded-lg border border-(--hero-text)/15"
+                style={{ inset: "-26% -17%", transform: "translateZ(-120px)" }}
+              />
+
+              <motion.div
+                className="relative w-full"
+                style={{ aspectRatio: LOGO_RATIO, transformStyle: "preserve-3d", z: markZ }}
+              >
+                {Array.from({ length: reduce ? 1 : MARK_LAYERS }, (_, i) => (
+                  <span
+                    key={i}
+                    aria-hidden={i > 0}
+                    // The front layer is the one the preloader measures and
+                    // reads its landing colour from, so it carries the hook and
+                    // the accessible name; the rest are pure geometry.
+                    {...(i === 0
+                      ? { "data-hero-logo": true, role: "img", "aria-label": "Feelz Films" }
+                      : {})}
+                    className={`absolute inset-0 ${i === 0 ? "text-(--hero-text)" : ""}`}
+                    style={{
+                      ...logoMaskStyle(
+                        i === 0
+                          ? "currentColor"
+                          : `color-mix(in srgb, #fff ${Math.max(
+                              12,
+                              72 - i * 6,
+                            )}%, var(--color-accent))`,
+                      ),
+                      transform: `translateZ(${-i * LAYER_GAP}px)`,
+                    }}
+                  />
+                ))}
+              </motion.div>
+
+              {/* Contact shadow, so the solid sits in the plate instead of
+                  hovering in front of it. */}
+              <span
+                aria-hidden
+                className="absolute left-1/2 top-full h-10 w-2/3 -translate-x-1/2 rounded-[50%] opacity-30 blur-xl"
+                style={{ background: "radial-gradient(ellipse, #000, transparent 70%)" }}
               />
             </motion.div>
           </div>
