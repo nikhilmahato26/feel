@@ -2,129 +2,32 @@
 
 import { useCallback, useRef } from "react";
 import type { PointerEvent } from "react";
-import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
+import { LOGO_RATIO, logoMaskStyle } from "../lib/brand";
 import { SOCIALS } from "../lib/socials";
-
-/** Placement inside the 3D stage, in px, before the responsive scale. */
-interface Slot {
-  x: number;
-  y: number;
-  z: number;
-  ry: number;
-  /** Seconds for one float cycle — varied so cards never bob in lockstep. */
-  float: number;
-  accent?: boolean;
-}
-
-/**
- * The stage holds the social accounts, arranged as depth rather than as a row.
- * Placements are chosen per count so the composition stays balanced whether two
- * or three accounts are live — add a fourth entry to SOCIALS and give it a slot
- * here. The first card carries the accent fill.
- */
-const SLOTS: Record<number, Slot[]> = {
-  1: [{ x: 0, y: 0, z: 120, ry: -6, float: 7.5, accent: true }],
-  2: [
-    { x: -104, y: -74, z: 120, ry: -6, float: 7.5, accent: true },
-    { x: 118, y: 96, z: 40, ry: 14, float: 9.2 },
-  ],
-  3: [
-    { x: -118, y: -128, z: 60, ry: 14, float: 9 },
-    { x: 96, y: -18, z: 130, ry: -8, float: 7.5, accent: true },
-    { x: -76, y: 150, z: 50, ry: 10, float: 10.2 },
-  ],
-};
-
-const CARD_W = 196;
-
-function SocialCard({
-  social,
-  slot,
-  reduce,
-}: {
-  social: (typeof SOCIALS)[number];
-  slot: Slot;
-  reduce: boolean | null;
-}) {
-  const { Icon, label, handle, href } = social;
-  const { x, y, z, ry, float, accent } = slot;
-
-  return (
-    <div
-      className="absolute top-1/2 left-1/2"
-      style={{
-        // Placement only. The float lives on the child so the two transforms
-        // never fight over the same property.
-        transform: `translate(-50%, -50%) translate3d(${x}px, ${y}px, ${z}px) rotateY(${ry}deg) rotateX(2deg)`,
-        transformStyle: "preserve-3d",
-        width: CARD_W,
-      }}
-    >
-      <motion.div
-        animate={reduce ? undefined : { y: [0, -11, 0] }}
-        transition={{ duration: float, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <a
-          href={href}
-          target="_blank"
-          rel="noreferrer noopener"
-          aria-label={`${label} — ${handle}`}
-          className={`cursor-hover-target block rounded-xl border p-4 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 ${
-            accent
-              ? "border-transparent text-(--hero-text)"
-              : "border-(--hairline-strong) bg-(--surface)/85 text-(--text) backdrop-blur-md"
-          }`}
-          style={{
-            boxShadow: accent ? "0 30px 60px -24px rgba(42,86,232,0.6)" : "var(--shadow-md)",
-            background: accent
-              ? "linear-gradient(150deg, var(--color-accent), var(--color-accent-2))"
-              : undefined,
-          }}
-        >
-          {/* Decorative throughout: the link's aria-label is the accessible
-              name, so nothing here gets announced twice. */}
-          <span aria-hidden className="flex items-center justify-between gap-3">
-            <Icon
-              size={24}
-              weight="fill"
-              className={accent ? "text-(--hero-text)" : "text-(--accent)"}
-            />
-            <ArrowUpRight
-              size={15}
-              weight="bold"
-              className={accent ? "text-(--hero-text)/80" : "text-(--text-secondary)"}
-            />
-          </span>
-
-          <span aria-hidden className="mt-5 block text-sm font-semibold">
-            {label}
-          </span>
-          <span
-            aria-hidden
-            className={`u-meta mt-1 block ${accent ? "opacity-80" : "text-(--text-secondary)"}`}
-          >
-            {handle}
-          </span>
-        </a>
-      </motion.div>
-    </div>
-  );
-}
 
 export default function Hero() {
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Pointer parallax. Written to motion values rather than state so moving the
-  // cursor across the hero never triggers a render.
+  // Pointer parallax on the plate. Written to motion values rather than state,
+  // so moving the cursor across the hero never triggers a render.
   const px = useMotionValue(0);
   const py = useMotionValue(0);
   const spring = { stiffness: 90, damping: 20, mass: 0.6 };
-  const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-15, 15]), spring);
-  const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [10, -10]), spring);
+  const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-11, 11]), spring);
+  const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [8, -8]), spring);
+  const markZ = useSpring(useTransform(py, [-0.5, 0.5], [26, 6]), spring);
 
   const handleMove = useCallback(
     (e: PointerEvent<HTMLElement>) => {
@@ -141,15 +44,16 @@ export default function Hero() {
     py.set(0);
   }, [px, py]);
 
-  // Scroll-linked depth: the stage sinks away, the copy lifts, the whole
-  // opening softens as it leaves.
+  // Scroll-linked depth: the plate sinks, the argument lifts, the whole opening
+  // softens as it leaves.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const stageZ = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -220]);
-  const copyY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -54]);
-  const fade = useTransform(scrollYProgress, [0, 0.9], reduce ? [1, 1] : [1, 0.3]);
+  const plateY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, 90]);
+  const markY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, 44]);
+  const copyY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -50]);
+  const fade = useTransform(scrollYProgress, [0, 0.9], reduce ? [1, 1] : [1, 0.32]);
 
   const rise = (delay: number) => ({
     initial: reduce ? false : { opacity: 0, y: 16 },
@@ -157,63 +61,121 @@ export default function Hero() {
     transition: { duration: 0.65, delay, ease: [0.16, 1, 0.3, 1] as const },
   });
 
-  // Three slots are laid out; fewer accounts fall back to a balanced pair.
-  const cards = SOCIALS.slice(0, 3);
-  const slots = SLOTS[cards.length] ?? SLOTS[3];
-
   return (
     <section
       ref={sectionRef}
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
-      className="relative overflow-hidden border-b border-(--border)"
+      className="border-b border-(--border)"
     >
-      {/* ---- Depth field: accent bloom, then a floor receding to a horizon ---- */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -top-40 right-0 h-[38rem] w-[38rem] rounded-full opacity-[0.16]"
-        style={{ background: "radial-gradient(circle, var(--color-accent), transparent 62%)" }}
-      />
-
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-64 md:h-80"
-        style={{ perspective: "520px", perspectiveOrigin: "50% 0%" }}
-      >
+      <div className="flex flex-col lg:flex-row lg:min-h-[86vh]">
+        {/* ---- Left plate: the mark, reversed out of the accent ---- */}
         <div
-          className={reduce ? "" : "grid-drift"}
-          style={{
-            position: "absolute",
-            inset: "0 -25%",
-            transform: "rotateX(72deg)",
-            transformOrigin: "50% 100%",
-            backgroundImage:
-              "linear-gradient(to right, var(--hairline-strong) 1px, transparent 1px), linear-gradient(to bottom, var(--hairline-strong) 1px, transparent 1px)",
-            backgroundSize: "72px 72px",
-            maskImage: "linear-gradient(to top, #000 5%, transparent 78%)",
-            WebkitMaskImage: "linear-gradient(to top, #000 5%, transparent 78%)",
-          }}
-        />
-      </div>
-
-      <div className="relative max-w-285 mx-auto grid items-center gap-4 px-6 md:px-8 lg:grid-cols-[1.05fr_0.95fr] min-h-[86vh] py-20 md:py-24">
-        {/* ---- The argument ---- */}
-        <motion.div style={{ y: copyY, opacity: fade }} className="relative z-10">
-          <motion.div {...rise(0.05)} className="flex items-center gap-3 mb-7">
-            <span aria-hidden className="w-6 h-px bg-(--accent)" />
-            <span className="u-meta text-(--accent)">Marketing · Content · Growth</span>
+          className="relative min-h-72 w-full overflow-hidden lg:min-h-0 lg:w-[41%]"
+          style={{ background: "linear-gradient(160deg, var(--color-accent), var(--color-accent-2))" }}
+        >
+          {/* Depth inside the plate: a drifting floor and a slow bloom, both
+              held well under the mark so they read as air, not as pattern. */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-56"
+            style={{ perspective: "520px", perspectiveOrigin: "50% 0%", y: plateY }}
+          >
+            <div
+              className={reduce ? "" : "grid-drift"}
+              style={{
+                position: "absolute",
+                inset: "0 -25%",
+                transform: "rotateX(72deg)",
+                transformOrigin: "50% 100%",
+                backgroundImage:
+                  "linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px)",
+                backgroundSize: "72px 72px",
+                maskImage: "linear-gradient(to top, #000 5%, transparent 80%)",
+                WebkitMaskImage: "linear-gradient(to top, #000 5%, transparent 80%)",
+              }}
+            />
           </motion.div>
 
-          <h1 className="u-display text-[clamp(2.5rem,1.7rem+3.1vw,4.5rem)] leading-[0.98] max-w-[17ch]">
-            <TextReveal text="Marketing that makes your expertise impossible to ignore." delay={0.2} trigger="mount" />
+          <motion.div
+            aria-hidden
+            style={{ y: plateY, background: "radial-gradient(circle, #fff, transparent 66%)" }}
+            className="orb-float pointer-events-none absolute -top-24 -left-20 h-96 w-96 rounded-full opacity-[0.16]"
+          />
+
+          {/* The mark. Tilts with the pointer and lifts toward the reader; the
+              preloader hands its own copy off to this exact element. */}
+          <div
+            className="relative z-10 flex h-full items-center justify-center px-8 py-20 lg:py-24"
+            style={{ perspective: "1100px" }}
+          >
+            <motion.div
+              style={{ transformStyle: "preserve-3d", rotateX, rotateY, y: markY }}
+              initial={reduce ? false : { opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-84"
+            >
+              {/* Filled with currentColor rather than the variable directly, so
+                  the element's computed `color` is white too — that's the value
+                  the preloader reads to know what colour to land in. */}
+              <motion.span
+                data-hero-logo
+                role="img"
+                aria-label="Feelz Films"
+                className="block w-full text-(--hero-text)"
+                style={{
+                  aspectRatio: LOGO_RATIO,
+                  ...logoMaskStyle("currentColor"),
+                  z: markZ,
+                }}
+              />
+            </motion.div>
+          </div>
+
+          {/* Caption, in a drawn rectangle rather than floated on its own. */}
+          <div className="absolute bottom-8 left-6 z-10 hidden max-w-76 items-stretch text-(--hero-text) opacity-80 lg:flex">
+            <span className="u-meta flex items-center border border-(--hero-text)/50 px-2 py-2">FF</span>
+            <span className="u-meta max-w-64 border-y border-r border-(--hero-text)/50 px-3 py-2 leading-[1.5]">
+              Marketing partner for founders and executives
+            </span>
+          </div>
+
+          {/* Dissolve the plate into the page rather than cutting it hard
+              against the headline: sideways on the split, downward once it
+              stacks above the copy. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-28 lg:block lg:w-36"
+            style={{ background: "linear-gradient(to right, transparent, var(--bg))" }}
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-20 lg:hidden"
+            style={{ background: "linear-gradient(to bottom, transparent, var(--bg))" }}
+          />
+        </div>
+
+        {/* ---- Right: the argument ---- */}
+        <motion.div
+          style={{ y: copyY, opacity: fade }}
+          className="flex flex-1 flex-col justify-center px-6 py-16 md:px-12 md:py-20 lg:px-16"
+        >
+          <motion.div {...rise(0.05)} className="mb-7 flex items-center gap-3">
+            <span aria-hidden className="h-px w-6 bg-(--accent)" />
+            <span className="u-meta text-(--accent)">Content · Personal branding · Marketing</span>
+          </motion.div>
+
+          <h1 className="u-display text-[clamp(2.5rem,1.7rem+3.1vw,4.75rem)] leading-[0.97] max-w-[15ch]">
+            <TextReveal text="Your expertise deserves to be seen." delay={0.2} trigger="mount" />
           </h1>
 
           <motion.p
             {...rise(0.6)}
-            className="mt-7 text-base md:text-lg text-(--text-secondary) max-w-[48ch] leading-relaxed"
+            className="mt-7 max-w-[46ch] text-base leading-relaxed text-(--text-secondary) md:text-lg"
           >
-            We run the content engine behind founders and executives: positioning, production and
-            distribution as one system, built to turn attention into pipeline.
+            We turn founder and executive expertise into content that builds authority, trust and
+            inbound opportunity.
           </motion.p>
 
           <motion.div {...rise(0.78)} className="mt-10 flex flex-wrap items-center gap-4">
@@ -223,7 +185,7 @@ export default function Hero() {
               className="gap-2 rounded-full pl-7 pr-5"
             >
               Book a call
-              <span className="w-7 h-7 rounded-full bg-(--accent-text) text-(--accent) flex items-center justify-center ml-2">
+              <span className="ml-2 flex h-7 w-7 items-center justify-center rounded-full bg-(--accent-text) text-(--accent)">
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
                   <path
                     d="M1 7H13M13 7L7 1M13 7L7 13"
@@ -240,33 +202,48 @@ export default function Hero() {
             </MagneticButton>
           </motion.div>
 
-          {/* The social accounts used to sit here as a "Follow along" row. They
-              now carry the stage on the right, so repeating them in the same
-              viewport would be saying it twice. */}
-        </motion.div>
+          {/* ---- The accounts, as rolling prisms: the platform on the front
+                  face, the handle on the accent face behind it. ---- */}
+          <motion.div {...rise(0.92)} className="mt-14 border-t border-(--hairline) pt-8">
+            <div className="flex items-center gap-3">
+              <span className="u-meta text-(--accent)">Follow along</span>
+              <span aria-hidden className="h-px max-w-20 flex-1 bg-(--hairline)" />
+            </div>
 
-        {/* ---- The stage: the social accounts, floating ---- */}
-        <motion.div
-          {...rise(0.35)}
-          className="relative h-[24rem] sm:h-[28rem] lg:h-[32rem]"
-          style={{ perspective: "1150px" }}
-        >
-          <motion.div
-            className="absolute inset-0 scale-[0.62] sm:scale-[0.78] lg:scale-100"
-            style={{ transformStyle: "preserve-3d", rotateX, rotateY, z: stageZ }}
-          >
-            {cards.map((s, i) => (
-              <SocialCard key={s.label} social={s} slot={slots[i]} reduce={reduce} />
-            ))}
+            <ul className="mt-5 flex flex-wrap items-center gap-3">
+              {SOCIALS.map(({ Icon, label, handle, href }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label={`${label} — ${handle}`}
+                    className="prism cursor-hover-target block w-40"
+                    style={{ ["--prism-h" as string]: "3.25rem" }}
+                  >
+                    {/* Both faces are decorative: the link's aria-label is the
+                        accessible name, so neither is announced twice. */}
+                    <span className="prism-body">
+                      <span
+                        aria-hidden
+                        className="prism-face prism-front border border-(--hairline-strong) bg-(--bg) text-(--text)"
+                      >
+                        <Icon size={20} weight="fill" className="text-(--accent)" />
+                        <span className="text-sm font-semibold">{label}</span>
+                      </span>
 
-            {/* Ground shadow, anchoring the stack to the floor. */}
-            <span
-              className="absolute top-1/2 left-1/2 h-24 w-72 -translate-x-1/2 rounded-[50%] opacity-40 blur-2xl"
-              style={{
-                transform: "translate(-50%, -50%) translate3d(0, 210px, 0) rotateX(76deg)",
-                background: "radial-gradient(ellipse, var(--color-accent), transparent 70%)",
-              }}
-            />
+                      <span
+                        aria-hidden
+                        className="prism-face prism-back bg-(--accent) text-(--accent-text) shadow-[0_18px_34px_-18px_rgba(42,86,232,0.85)]"
+                      >
+                        <span className="u-meta">{handle}</span>
+                        <ArrowUpRight size={15} weight="bold" />
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </motion.div>
         </motion.div>
       </div>

@@ -12,32 +12,76 @@ import FinalCta from "../components/FinalCta";
  *
  * `id` is the YouTube video ID. Frames are click-to-play facades (see
  * YouTubeFrame), so nine posters cost nine images rather than nine players.
+ * Entries without an `id` render as reserved frames, which is how the sections
+ * that have no films yet hold their shape.
  */
 interface Film {
-  id: string;
+  id?: string;
   client: string;
 }
 
-const LONG_FORM: Film[] = [
-  { id: "8knPNcme2uw", client: "Oechsli" },
-  { id: "33FqKxLjB8Y", client: "Enable Solutions" },
-  { id: "8byDZiFUao4", client: "Daniel Iles" },
-  { id: "g6NBHR2p7Dc", client: "CRM Advisors" },
-  { id: "LT7A8WgFFNg", client: "Topaz Consulting" },
-  { id: "FG2F2QIXstc", client: "Wall Street" },
-  { id: "0nBAjE71S9I", client: "Stephnie ABT" },
-];
-
-const SHORT_FORM: Film[] = [
-  { id: "zxfdR1Xq0jA", client: "Genwin Kashish" },
-  { id: "iuB33GXZONw", client: "LoVasco" },
-];
-
-function slot(i: number) {
-  return String(i + 1).padStart(2, "0");
+interface Gallery {
+  label: string;
+  /** Plural noun for the count in the section rule. */
+  unit: string;
+  films: Film[];
+  /** Aspect of each frame, and the grid the frames sit in. */
+  aspect: string;
+  grid: string;
 }
 
+const GALLERIES: Gallery[] = [
+  {
+    label: "Long form video & podcast",
+    unit: "films",
+    aspect: "aspect-video",
+    grid: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+    films: [
+      { id: "8knPNcme2uw", client: "Oechsli" },
+      { id: "33FqKxLjB8Y", client: "Enable Solutions" },
+      { id: "8byDZiFUao4", client: "Daniel Iles" },
+      { id: "g6NBHR2p7Dc", client: "CRM Advisors" },
+      { id: "LT7A8WgFFNg", client: "Topaz Consulting" },
+      { id: "FG2F2QIXstc", client: "Wall Street" },
+      { id: "0nBAjE71S9I", client: "Stephnie ABT" },
+    ],
+  },
+  {
+    label: "Short form videos",
+    unit: "verticals",
+    aspect: "aspect-[9/16]",
+    // Held to a narrow column so the verticals don't tower over the page.
+    grid: "grid grid-cols-2 gap-4 max-w-lg",
+    films: [
+      { id: "zxfdR1Xq0jA", client: "Genwin Kashish" },
+      { id: "iuB33GXZONw", client: "LoVasco" },
+    ],
+  },
+  {
+    label: "Before and after",
+    unit: "reserved",
+    aspect: "aspect-video",
+    grid: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+    // TODO: send the before/after pairs and they drop straight in here.
+    films: [{ client: "Coming soon" }, { client: "Coming soon" }, { client: "Coming soon" }],
+  },
+  {
+    label: "Docu films",
+    unit: "reserved",
+    aspect: "aspect-video",
+    grid: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+    // TODO: send the documentary IDs and they drop straight in here.
+    films: [{ client: "Coming soon" }, { client: "Coming soon" }, { client: "Coming soon" }],
+  },
+];
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export default function Portfolio() {
+  // Frame indices run continuously across the galleries, so no two frames on
+  // the page carry the same slot number.
+  let slot = 0;
+
   return (
     <main>
       {/* Page head, carrying the same accent bloom as the home hero. */}
@@ -66,69 +110,51 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* Long-form gallery. First film leads at double width. */}
-      <section className="py-14 md:py-20 border-b border-(--border)">
-        <ScrollStage>
-          <div className="max-w-285 mx-auto px-6 md:px-8">
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-              <span className="u-meta text-(--accent)">Long-form</span>
-              <span className="u-meta text-(--text-secondary)">
-                {String(LONG_FORM.length).padStart(2, "0")} films
-              </span>
-            </div>
+      {GALLERIES.map((g) => {
+        const live = g.films.filter((f) => f.id).length;
 
-            <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" stagger={0.07}>
-              {LONG_FORM.map((f, i) => (
-                <RevealItem key={f.id}>
-                  <figure className="h-full">
-                    <Tilt3D glare={false}>
-                      <YouTubeFrame
-                        id={f.id}
-                        title={f.client}
-                        index={slot(i)}
-                        className="aspect-video"
-                      />
-                    </Tilt3D>
-                    <figcaption className="mt-3 text-sm font-medium">{f.client}</figcaption>
-                  </figure>
-                </RevealItem>
-              ))}
-            </RevealGroup>
-          </div>
-        </ScrollStage>
-      </section>
+        return (
+          <section key={g.label} className="py-14 md:py-20 border-b border-(--border)">
+            <ScrollStage>
+              <div className="max-w-285 mx-auto px-6 md:px-8">
+                <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+                  <span className="u-meta text-(--accent)">{g.label}</span>
+                  <span className="u-meta text-(--text-secondary)">
+                    {live ? `${pad(live)} ${g.unit}` : "In production"}
+                  </span>
+                </div>
 
-      {/* Shorts, kept at 9:16 and held to a narrow column so they don't tower. */}
-      <section className="py-14 md:py-20 border-b border-(--border)">
-        <ScrollStage>
-          <div className="max-w-285 mx-auto px-6 md:px-8">
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-              <span className="u-meta text-(--accent)">Short-form</span>
-              <span className="u-meta text-(--text-secondary)">
-                {String(SHORT_FORM.length).padStart(2, "0")} verticals
-              </span>
-            </div>
-
-            <RevealGroup className="grid grid-cols-2 gap-4 max-w-lg" stagger={0.07}>
-              {SHORT_FORM.map((f, i) => (
-                <RevealItem key={f.id}>
-                  <figure>
-                    <Tilt3D glare={false}>
-                      <YouTubeFrame
-                        id={f.id}
-                        title={f.client}
-                        index={slot(LONG_FORM.length + i)}
-                        className="aspect-[9/16]"
-                      />
-                    </Tilt3D>
-                    <figcaption className="mt-3 text-sm font-medium">{f.client}</figcaption>
-                  </figure>
-                </RevealItem>
-              ))}
-            </RevealGroup>
-          </div>
-        </ScrollStage>
-      </section>
+                <RevealGroup className={g.grid} stagger={0.07}>
+                  {g.films.map((f, i) => {
+                    slot += 1;
+                    return (
+                      <RevealItem key={`${g.label}-${f.id ?? i}`}>
+                        <figure className="h-full">
+                          <Tilt3D glare={false}>
+                            <YouTubeFrame
+                              id={f.id}
+                              title={f.client}
+                              index={pad(slot)}
+                              className={g.aspect}
+                            />
+                          </Tilt3D>
+                          <figcaption
+                            className={`mt-3 text-sm font-medium ${
+                              f.id ? "" : "text-(--text-secondary)"
+                            }`}
+                          >
+                            {f.client}
+                          </figcaption>
+                        </figure>
+                      </RevealItem>
+                    );
+                  })}
+                </RevealGroup>
+              </div>
+            </ScrollStage>
+          </section>
+        );
+      })}
 
       <FinalCta />
     </main>

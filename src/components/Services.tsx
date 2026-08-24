@@ -3,6 +3,7 @@
 import {
   ArrowsClockwise,
   Compass,
+  DownloadSimple,
   PaintBrush,
   Rocket,
   VideoCamera,
@@ -12,6 +13,19 @@ import { RevealGroup, RevealItem } from "./Reveal";
 import SectionHeader from "./SectionHeader";
 import MagneticButton from "./MagneticButton";
 import ScrollStage from "./ScrollStage";
+
+/**
+ * TODO: the brochure PDF isn't in the repo yet. Drop it at
+ * public/feelz-films-brochure.pdf and set this to that path.
+ *
+ * Left empty on purpose in the meantime: a single-page app rewrites unknown
+ * paths to index.html, so a link to a missing PDF doesn't 404 — it hands the
+ * visitor an HTML file named like a brochure. The request falls back to email
+ * until the file exists.
+ */
+const BROCHURE = "";
+const BROCHURE_FALLBACK =
+  "mailto:connect@feelzfilms.com?subject=Company%20brochure%20%2B%20case%20studies";
 
 interface Service {
   k: string;
@@ -155,24 +169,24 @@ export default function Services() {
           {/* Sixth cell completes the grid and gives the row somewhere to go. */}
           <RevealItem className="min-w-0">
             <div className="depth-cell flex h-full min-h-80 flex-col justify-between rounded-2xl border border-(--hairline-strong) bg-(--surface) p-7 md:p-8">
-              <span className="u-meta text-(--text-secondary)">Not sure where to start</span>
+              <span className="u-meta text-(--text-secondary)">Take a closer look</span>
               <div>
                 <p className="font-display text-xl font-bold tracking-[-0.02em] md:text-[1.4rem]">
-                  Most people need two of these, not five.
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-(--text-secondary)">
-                  Tell us where you are and we'll tell you which of the five actually moves the
-                  needle for you.
+                  Get to know our work, approach, and the brands we've helped build.
                 </p>
                 <div className="mt-7">
                   <MagneticButton
-                    href="mailto:connect@feelzfilms.com?subject=Which%20services%20do%20we%20need"
+                    href={BROCHURE || BROCHURE_FALLBACK}
                     variant="secondary"
-                    className="rounded-full"
+                    className="gap-2 rounded-full"
                   >
-                    Ask us
+                    <DownloadSimple size={17} weight="bold" />
+                    Download
                   </MagneticButton>
                 </div>
+                <p className="u-meta mt-5 text-(--text-secondary)">
+                  Company brochure + case studies
+                </p>
               </div>
             </div>
           </RevealItem>

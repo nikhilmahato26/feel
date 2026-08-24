@@ -42,11 +42,8 @@ const CLIENTS: Client[] = [
   { slug: "smartscale360", name: "SmartScale360", coloured: true, bg: "#0151fe" },
   { slug: "fobet-media", name: "Fobet Media", coloured: true, bg: "#ac89a9" },
   { slug: "bailey-group", name: "The Bailey Group", coloured: true, bg: "#eb6214" },
-  // TODO: names unconfirmed — the navy figure mark and the red bolt mark came
-  // through without any wordmark. Replace both `name` values once known; they
-  // are the alt text a screen reader announces.
-  { slug: "client-08", name: "Client", coloured: true, bg: "#232d62" },
-  { slug: "client-09", name: "Client", coloured: true, bg: "#c23933" },
+  { slug: "topaz-consulting", name: "Topaz Consulting Services", coloured: true, bg: "#232d62" },
+  { slug: "oechsli", name: "Oechsli", coloured: true, bg: "#c23933" },
 ];
 
 /**

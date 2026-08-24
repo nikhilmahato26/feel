@@ -68,6 +68,9 @@ export default function Preloader() {
 
   const progress = useMotionValue(0);
 
+  /** Mark colour. White on the accent screen, then whatever it lands into. */
+  const fillColour = useMotionValue("#ffffff");
+
   // Loading is told by the wordmark itself: the mark fills from the baseline up
   // as the real work completes. No bar, no spinner — the logo is the indicator.
   const fill = useTransform(progress, (v) => `inset(${100 - v}% 0% 0% 0%)`);
@@ -141,18 +144,33 @@ export default function Preloader() {
       await wait(MARK_DELAY * 1000);
       if (cancelled) return;
 
-      const target = document.querySelector("[data-nav-logo]")?.getBoundingClientRect();
+      // Prefer the hero plate's mark: it's white on the accent, exactly like
+      // the one on this screen, so the hand-off needs no colour change at all.
+      // The nav mark is the fallback (portfolio page, or a missing hero).
+      const targetEl =
+        document.querySelector("[data-hero-logo]") ?? document.querySelector("[data-nav-logo]");
+      const target = targetEl?.getBoundingClientRect();
       const source = markRef.current?.getBoundingClientRect();
 
-      if (target && source && target.height > 0) {
+      if (targetEl && target && source && target.height > 0) {
         setFlight({
           x: target.left + target.width / 2 - (source.left + source.width / 2),
           y: target.top + target.height / 2 - (source.top + source.height / 2),
           scale: target.height / source.height,
         });
         setPhase("landing");
+
+        // Land in whatever colour the target is drawn in. On the hero plate
+        // that's already white, so this is a no-op there and a crossfade to
+        // the page's text colour when handing off to the nav.
+        const landingColour = getComputedStyle(targetEl).color;
+        animate(fillColour, landingColour, {
+          duration: MARK_TRAVEL * 0.55,
+          delay: MARK_TRAVEL * 0.35,
+          ease: "easeInOut",
+        });
       } else {
-        // Nav logo not measurable — skip the hand-off rather than guess.
+        // Nothing measurable — skip the hand-off rather than guess.
         setPhase("done");
       }
     })();
@@ -162,7 +180,7 @@ export default function Preloader() {
       creep.stop();
       unlockScroll();
     };
-  }, [progress, reduce]);
+  }, [fillColour, progress, reduce]);
 
   const opening = phase === "opening" || phase === "landing";
   const panelCount = reduce ? 1 : PANELS;
@@ -184,13 +202,22 @@ export default function Preloader() {
             {Array.from({ length: panelCount }, (_, i) => (
               <motion.div
                 key={i}
-                className="absolute top-0 h-full bg-(--bg)"
+                className="absolute top-0 h-full"
                 // Positioned rather than flexed, and a pixel wider than its
                 // share: sub-pixel widths otherwise leave hairline seams of
                 // the page showing between panels.
+                //
+                // Each panel carries the full-screen gradient scaled to the
+                // panel count and offset to its own slice, so the six of them
+                // reconstruct one continuous wash instead of repeating it.
                 style={{
                   left: `${(i / panelCount) * 100}%`,
                   width: `calc(${100 / panelCount}% + 1px)`,
+                  backgroundImage:
+                    "linear-gradient(160deg, var(--color-accent), var(--color-accent-2))",
+                  backgroundSize: `${panelCount * 100}% 100%`,
+                  backgroundPosition:
+                    panelCount > 1 ? `${(i / (panelCount - 1)) * 100}% 0` : "center",
                 }}
                 initial={false}
                 animate={opening ? (reduce ? { opacity: 0 } : { y: "-101%" }) : {}}
@@ -211,9 +238,7 @@ export default function Preloader() {
             animate={{ opacity: opening ? 0 : 1 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <motion.span className="u-index tabular-nums text-(--text-secondary)">
-              {readout}
-            </motion.span>
+            <motion.span className="u-index tabular-nums text-white/70">{readout}</motion.span>
           </motion.div>
 
           {/* The mark. Sits above the panels, so it stays put as they lift and
@@ -242,15 +267,20 @@ export default function Preloader() {
                 className="absolute inset-0"
                 style={{ transformStyle: "preserve-3d", rotateX, rotateY }}
               >
-                {/* Unfilled mark, sitting just off the background. */}
+                {/* Unfilled mark, sitting just off the accent behind it. */}
                 <span
                   className="absolute inset-0"
-                  style={logoMaskStyle("color-mix(in srgb, var(--text) 13%, transparent)")}
+                  style={logoMaskStyle("rgba(255,255,255,0.22)")}
                 />
-                {/* Filled mark, clipped to the progress line. */}
+                {/* Filled mark, clipped to the progress line. Its colour is a
+                    motion value so it can land in the target's own colour. */}
                 <motion.span
                   className="absolute inset-0"
-                  style={{ ...logoMaskStyle("var(--text)"), clipPath: fill }}
+                  style={{
+                    ...logoMaskStyle("#ffffff"),
+                    backgroundColor: fillColour,
+                    clipPath: fill,
+                  }}
                 />
               </motion.div>
             </motion.div>
