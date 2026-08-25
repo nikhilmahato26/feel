@@ -40,7 +40,7 @@ export default function ClientMarquee() {
       aria-label="Clients"
       className="relative overflow-hidden border-b border-(--border) bg-(--bg-alt)"
     >
-      <div className="flex items-center gap-3 px-6 pt-10 md:px-8">
+      <div className="flex items-center gap-3 px-6 pt-7 md:px-8">
         <span aria-hidden className="h-px w-6 bg-(--accent)" />
         <span className="u-meta text-(--accent)">Trusted by</span>
         <span aria-hidden className="h-px flex-1 bg-(--hairline)" />
@@ -49,16 +49,16 @@ export default function ClientMarquee() {
 
       {/* marquee-track is what the CSS uses to pause the run on hover. */}
       <div
-        className="marquee-track relative py-12 md:py-14"
+        className="marquee-track relative py-7 md:py-8"
         style={{
           maskImage: "linear-gradient(to right, transparent, #000 6%, #000 94%, transparent)",
           WebkitMaskImage:
             "linear-gradient(to right, transparent, #000 6%, #000 94%, transparent)",
         }}
       >
-        <ul className="marquee-left flex w-max items-start gap-8 md:gap-12">
+        <ul className="marquee-left flex w-max items-start gap-6 md:gap-8">
           {TRACK.map((c, i) => (
-            <li key={`${c.slug}-${i}`} className="w-28 shrink-0 md:w-32">
+            <li key={`${c.slug}-${i}`} className="w-[4.5rem] shrink-0 md:w-20">
               <div className="aspect-square overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--surface) shadow-[var(--shadow-sm)]">
                 <img
                   src={`/clients/tile/${c.slug}.jpg`}
@@ -72,7 +72,7 @@ export default function ClientMarquee() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-3 text-center text-xs font-medium leading-snug text-(--text-secondary)">
+              <p className="mt-2.5 text-center text-[0.6875rem] font-medium leading-tight text-(--text-secondary)">
                 {c.name}
               </p>
             </li>

@@ -285,17 +285,6 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* The preloader flies its mark into the header's logo slot, so the header's own
-   copy waits until that flight lands — otherwise both are on screen together
-   for the length of the travel. The root flag is set by Preloader while any
-   phase before "done" is running.
-
-   Opacity, not visibility or display: the hand-off measures this element to aim
-   at, and a hidden box reports no rect. */
-[data-preloading] [data-nav-logo] {
-  opacity: 0;
-  pointer-events: none;
-}
 ::-webkit-scrollbar {
   width: 11px;
   height: 11px;

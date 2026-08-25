@@ -19,7 +19,7 @@ function CornerTick({ className }: { className: string }) {
  */
 export default function FinalCta() {
   return (
-    <section className="py-24 md:py-32 border-b border-(--border)">
+    <section className="py-14 md:py-24 border-b border-(--border)">
       <ScrollStage amount={0.75}>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <Reveal y={36}>

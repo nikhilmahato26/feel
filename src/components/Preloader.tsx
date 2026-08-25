@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AnimatePresence,
   animate,
@@ -19,18 +17,23 @@ const PANELS = 6;
 const CURTAIN_EASE = [0.72, 0, 0.16, 1] as const;
 const SETTLE_EASE = [0.16, 1, 0.3, 1] as const;
 
-/* Choreography, in seconds. The mark's flight has to be the last thing moving:
-   the overlay unmounts when it lands, and anything still animating at that
-   point would be cut off mid-travel.
-
-     panels   0.00 → 0.95, staggered 0.055 each → last lands at 1.225
-     mark     0.30 → 1.25                                              */
+/* Choreography, in seconds.
+ *
+ * The mark leaves before the screen opens, and that ordering is the whole
+ * point. An earlier version flew this mark into the hero's logo to "hand off",
+ * which meant measuring a target element at runtime and animating onto it —
+ * two copies of the wordmark were on screen for the length of the travel, and
+ * on a phone the measured box moved under the animation, so it juddered. The
+ * mark now simply bows out first: nothing to measure, nothing to collide with.
+ *
+ *   mark out   0.00 → 0.42
+ *   panels     0.42 → 1.37, staggered 0.055 each → last clears at 1.65
+ */
+const MARK_EXIT = 0.42;
 const PANEL_TRAVEL = 0.95;
 const PANEL_STAGGER = 0.055;
-const MARK_DELAY = 0.3;
-const MARK_TRAVEL = 0.95;
 
-type Phase = "loading" | "opening" | "landing" | "done";
+type Phase = "loading" | "exiting" | "opening" | "done";
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -61,15 +64,8 @@ export default function Preloader() {
   const reduce = useReducedMotion();
   const [phase, setPhase] = useState<Phase>("loading");
   const [markReady, setMarkReady] = useState(false);
-  const markRef = useRef<HTMLDivElement>(null);
-
-  /** Measured transform that carries the mark into the nav's logo slot. */
-  const [flight, setFlight] = useState<{ x: number; y: number; scale: number } | null>(null);
 
   const progress = useMotionValue(0);
-
-  /** Mark colour. White on the accent screen, then whatever it lands into. */
-  const fillColour = useMotionValue("#ffffff");
 
   // Loading is told by the wordmark itself: the mark fills from the baseline up
   // as the real work completes. No bar, no spinner — the logo is the indicator.
@@ -83,22 +79,6 @@ export default function Preloader() {
 
   useEffect(() => {
     if (phase !== "loading") unlockScroll();
-  }, [phase]);
-
-  // The nav's own logo is suppressed until the flight lands, otherwise two
-  // copies of the mark are on screen for the length of the travel. Flagged on
-  // the root so the nav needs no wiring; visibility is left alone because the
-  // hand-off measures that box to aim at, and a hidden box has no rect.
-  useEffect(() => {
-    const root = document.documentElement;
-    if (phase === "done") {
-      delete root.dataset.preloading;
-      return;
-    }
-    root.dataset.preloading = "";
-    return () => {
-      delete root.dataset.preloading;
-    };
   }, [phase]);
 
   useEffect(() => {
@@ -131,48 +111,21 @@ export default function Preloader() {
       await wait(200);
       if (cancelled) return;
 
-      setPhase("opening");
-
       if (reduce) {
-        await wait(260);
+        setPhase("opening");
+        await wait(320);
         if (!cancelled) setPhase("done");
         return;
       }
 
-      // Overlap: the panels are already travelling when the mark sets off, so
-      // the two moves read as one gesture.
-      await wait(MARK_DELAY * 1000);
+      // Mark out first, then the screen opens onto the page's own logo.
+      setPhase("exiting");
+      await wait(MARK_EXIT * 1000);
       if (cancelled) return;
 
-      // Prefer the hero plate's mark: it's white on the accent, exactly like
-      // the one on this screen, so the hand-off needs no colour change at all.
-      // The nav mark is the fallback (portfolio page, or a missing hero).
-      const targetEl =
-        document.querySelector("[data-hero-logo]") ?? document.querySelector("[data-nav-logo]");
-      const target = targetEl?.getBoundingClientRect();
-      const source = markRef.current?.getBoundingClientRect();
-
-      if (targetEl && target && source && target.height > 0) {
-        setFlight({
-          x: target.left + target.width / 2 - (source.left + source.width / 2),
-          y: target.top + target.height / 2 - (source.top + source.height / 2),
-          scale: target.height / source.height,
-        });
-        setPhase("landing");
-
-        // Land in whatever colour the target is drawn in. On the hero plate
-        // that's already white, so this is a no-op there and a crossfade to
-        // the page's text colour when handing off to the nav.
-        const landingColour = getComputedStyle(targetEl).color;
-        animate(fillColour, landingColour, {
-          duration: MARK_TRAVEL * 0.55,
-          delay: MARK_TRAVEL * 0.35,
-          ease: "easeInOut",
-        });
-      } else {
-        // Nothing measurable — skip the hand-off rather than guess.
-        setPhase("done");
-      }
+      setPhase("opening");
+      await wait((PANEL_TRAVEL + PANEL_STAGGER * (PANELS - 1)) * 1000);
+      if (!cancelled) setPhase("done");
     })();
 
     return () => {
@@ -180,9 +133,10 @@ export default function Preloader() {
       creep.stop();
       unlockScroll();
     };
-  }, [fillColour, progress, reduce]);
+  }, [progress, reduce]);
 
-  const opening = phase === "opening" || phase === "landing";
+  const opening = phase === "opening";
+  const markGone = phase === "exiting" || phase === "opening";
   const panelCount = reduce ? 1 : PANELS;
 
   return (
@@ -222,7 +176,7 @@ export default function Preloader() {
                 initial={false}
                 animate={opening ? (reduce ? { opacity: 0 } : { y: "-101%" }) : {}}
                 transition={{
-                  duration: reduce ? 0.3 : PANEL_TRAVEL,
+                  duration: reduce ? 0.32 : PANEL_TRAVEL,
                   delay: reduce ? 0 : i * PANEL_STAGGER,
                   ease: CURTAIN_EASE,
                 }}
@@ -235,32 +189,25 @@ export default function Preloader() {
             aria-hidden
             className="absolute bottom-8 right-6 md:bottom-10 md:right-10"
             initial={false}
-            animate={{ opacity: opening ? 0 : 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            animate={{ opacity: markGone ? 0 : 1 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
           >
             <motion.span className="u-index tabular-nums text-white/70">{readout}</motion.span>
           </motion.div>
 
-          {/* The mark. Sits above the panels, so it stays put as they lift and
-              then carries itself into the nav. */}
+          {/* The mark, centred and on top of the panels. */}
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <motion.div
-              ref={markRef}
               className="relative w-[min(62vw,24rem)]"
               style={{ aspectRatio: LOGO_RATIO }}
               initial={false}
-              animate={
-                phase === "landing" && flight
-                  ? { x: flight.x, y: flight.y, scale: flight.scale, opacity: 1 }
-                  : { x: 0, y: 0, scale: 1, opacity: markReady ? 1 : 0 }
-              }
-              transition={
-                phase === "landing"
-                  ? { duration: MARK_TRAVEL, ease: CURTAIN_EASE }
-                  : { duration: 0.5, ease: SETTLE_EASE }
-              }
-              onAnimationComplete={() => {
-                if (phase === "landing") setPhase("done");
+              animate={{
+                opacity: markGone ? 0 : markReady ? 1 : 0,
+                scale: markGone ? 0.96 : 1,
+              }}
+              transition={{
+                duration: markGone ? MARK_EXIT : 0.5,
+                ease: markGone ? CURTAIN_EASE : SETTLE_EASE,
               }}
             >
               <motion.div
@@ -272,15 +219,10 @@ export default function Preloader() {
                   className="absolute inset-0"
                   style={logoMaskStyle("rgba(255,255,255,0.22)")}
                 />
-                {/* Filled mark, clipped to the progress line. Its colour is a
-                    motion value so it can land in the target's own colour. */}
+                {/* Filled mark, clipped to the progress line. */}
                 <motion.span
                   className="absolute inset-0"
-                  style={{
-                    ...logoMaskStyle("#ffffff"),
-                    backgroundColor: fillColour,
-                    clipPath: fill,
-                  }}
+                  style={{ ...logoMaskStyle("#ffffff"), clipPath: fill }}
                 />
               </motion.div>
             </motion.div>

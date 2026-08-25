@@ -20,6 +20,28 @@ import { SOCIALS } from "../lib/socials";
 const MARK_LAYERS = 14;
 const LAYER_GAP = 2.6;
 
+/**
+ * Motes sitting in the air behind the headline, at assorted depths.
+ *
+ * Fixed values rather than Math.random(): a random field re-rolls on every
+ * render and can't be tuned or reviewed. Positions are percentages of the copy
+ * area, `z` is depth in px, `s` is diameter in px.
+ */
+const MOTES = [
+  { x: 6, y: 18, z: -220, s: 7, o: 0.5, d: 11 },
+  { x: 18, y: 62, z: -120, s: 4, o: 0.42, d: 9 },
+  { x: 27, y: 8, z: -300, s: 10, o: 0.3, d: 13 },
+  { x: 38, y: 78, z: -80, s: 5, o: 0.5, d: 10.5 },
+  { x: 47, y: 30, z: -260, s: 6, o: 0.34, d: 12 },
+  { x: 58, y: 66, z: -160, s: 8, o: 0.4, d: 9.5 },
+  { x: 66, y: 14, z: -100, s: 4, o: 0.55, d: 8.5 },
+  { x: 74, y: 46, z: -320, s: 12, o: 0.26, d: 14 },
+  { x: 82, y: 84, z: -140, s: 6, o: 0.44, d: 11.5 },
+  { x: 90, y: 24, z: -200, s: 5, o: 0.38, d: 10 },
+  { x: 12, y: 40, z: -360, s: 14, o: 0.2, d: 15 },
+  { x: 54, y: 92, z: -240, s: 7, o: 0.3, d: 12.5 },
+];
+
 export default function Hero() {
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
@@ -32,6 +54,11 @@ export default function Hero() {
   const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-11, 11]), spring);
   const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [8, -8]), spring);
   const markZ = useSpring(useTransform(py, [-0.5, 0.5], [26, 6]), spring);
+
+  // The mote field turns the other way and further, so it slides against the
+  // copy instead of moving with it.
+  const moteY = useSpring(useTransform(px, [-0.5, 0.5], [7, -7]), spring);
+  const moteX = useSpring(useTransform(py, [-0.5, 0.5], [-5, 5]), spring);
 
   const handleMove = useCallback(
     (e: PointerEvent<HTMLElement>) => {
@@ -143,12 +170,9 @@ export default function Hero() {
                   <span
                     key={i}
                     aria-hidden={i > 0}
-                    // The front layer is the one the preloader measures and
-                    // reads its landing colour from, so it carries the hook and
-                    // the accessible name; the rest are pure geometry.
-                    {...(i === 0
-                      ? { "data-hero-logo": true, role: "img", "aria-label": "Feelz Films" }
-                      : {})}
+                    // The front layer carries the accessible name; the rest are
+                    // pure geometry.
+                    {...(i === 0 ? { role: "img", "aria-label": "Feelz Films" } : {})}
                     className={`absolute inset-0 ${i === 0 ? "text-(--hero-text)" : ""}`}
                     style={{
                       ...logoMaskStyle(
@@ -185,24 +209,87 @@ export default function Hero() {
 
           {/* Dissolve the plate into the page rather than cutting it hard
               against the headline: sideways on the split, downward once it
-              stacks above the copy. */}
+              stacks above the copy.
+              
+              Two stops each, and a wide one. A single linear ramp to the page
+              colour leaves a visible band where it starts, because the eye
+              catches the change in gradient slope; easing the alpha in stages
+              spreads that out until the edge stops reading as an edge. */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-28 lg:block lg:w-36"
-            style={{ background: "linear-gradient(to right, transparent, var(--bg))" }}
+            className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-44 lg:block xl:w-56"
+            style={{
+              background:
+                "linear-gradient(to right, transparent, color-mix(in srgb, var(--bg) 45%, transparent) 42%, color-mix(in srgb, var(--bg) 88%, transparent) 76%, var(--bg))",
+            }}
           />
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-20 lg:hidden"
-            style={{ background: "linear-gradient(to bottom, transparent, var(--bg))" }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 lg:hidden"
+            style={{
+              background:
+                "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 45%, transparent) 42%, color-mix(in srgb, var(--bg) 88%, transparent) 76%, var(--bg))",
+            }}
           />
         </div>
 
         {/* ---- Right: the argument ---- */}
-        <motion.div
-          style={{ y: copyY, opacity: fade }}
-          className="flex flex-1 flex-col justify-center px-6 py-16 md:px-12 md:py-20 lg:px-16"
-        >
+        <div className="relative flex flex-1 flex-col justify-center">
+          {/* Air behind the text: accent motes at a dozen depths, plus a soft
+              bloom carrying the plate's colour across the join. They sit in
+              their own perspective and parallax against the pointer, which is
+              what gives the copy something to sit in front of. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+            style={{ perspective: "900px" }}
+          >
+            <span
+              className="absolute -left-24 top-1/2 h-[36rem] w-[36rem] -translate-y-1/2 rounded-full opacity-[0.13]"
+              style={{ background: "radial-gradient(circle, var(--color-accent), transparent 62%)" }}
+            />
+
+            <motion.div
+              className="absolute inset-0"
+              style={{ transformStyle: "preserve-3d", rotateX: moteX, rotateY: moteY }}
+            >
+              {MOTES.map((m, i) => (
+                // Depth on the outer span, drift on the inner one. A CSS
+                // animation outranks an inline style, so putting both on one
+                // element would let the float's transform erase translateZ and
+                // flatten the whole field.
+                <span
+                  key={i}
+                  className="absolute"
+                  style={{
+                    left: `${m.x}%`,
+                    top: `${m.y}%`,
+                    transform: `translateZ(${m.z}px)`,
+                  }}
+                >
+                  <span
+                    className={`block rounded-full ${reduce ? "" : "orb-float"}`}
+                    style={{
+                      width: m.s,
+                      height: m.s,
+                      opacity: m.o,
+                      background: "var(--color-accent)",
+                      // Blur with depth, so the far ones read as out of focus
+                      // rather than merely small.
+                      filter: `blur(${Math.max(0, (-m.z - 100) / 90).toFixed(2)}px)`,
+                      animationDuration: `${m.d}s`,
+                      animationDelay: `${(i % 5) * -1.7}s`,
+                    }}
+                  />
+                </span>
+              ))}
+            </motion.div>
+          </div>
+
+          <motion.div
+            style={{ y: copyY, opacity: fade }}
+            className="relative z-10 px-6 py-14 md:px-12 md:py-16 lg:px-16"
+          >
           <motion.div {...rise(0.05)} className="mb-7 flex items-center gap-3">
             <span aria-hidden className="h-px w-6 bg-(--accent)" />
             <span className="u-meta text-(--accent)">Content · Personal branding · Marketing</span>
@@ -286,8 +373,9 @@ export default function Hero() {
                 </li>
               ))}
             </ul>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -1,9 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Reveal, RevealGroup, RevealItem } from "../components/Reveal";
 import TextReveal from "../components/TextReveal";
 import YouTubeFrame from "../components/YouTubeFrame";
 import Tilt3D from "../components/Tilt3D";
 import ScrollStage from "../components/ScrollStage";
 import FinalCta from "../components/FinalCta";
+import { scrollToTarget } from "../lib/scroller";
 
 /**
  * Route-level work page — a gallery, deliberately light on words. Each entry is
@@ -21,6 +25,8 @@ interface Film {
 }
 
 interface Gallery {
+  /** Anchor target for the jump buttons. */
+  id: string;
   label: string;
   /** Plural noun for the count in the section rule. */
   unit: string;
@@ -32,6 +38,7 @@ interface Gallery {
 
 const GALLERIES: Gallery[] = [
   {
+    id: "long-form",
     label: "Long form video & podcast",
     unit: "films",
     aspect: "aspect-video",
@@ -47,6 +54,7 @@ const GALLERIES: Gallery[] = [
     ],
   },
   {
+    id: "short-form",
     label: "Short form videos",
     unit: "verticals",
     aspect: "aspect-[9/16]",
@@ -58,6 +66,7 @@ const GALLERIES: Gallery[] = [
     ],
   },
   {
+    id: "before-after",
     label: "Before and after",
     unit: "reserved",
     aspect: "aspect-video",
@@ -66,6 +75,7 @@ const GALLERIES: Gallery[] = [
     films: [{ client: "Coming soon" }, { client: "Coming soon" }, { client: "Coming soon" }],
   },
   {
+    id: "docu-films",
     label: "Docu films",
     unit: "reserved",
     aspect: "aspect-video",
@@ -77,10 +87,39 @@ const GALLERIES: Gallery[] = [
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+/** Marks the jump button whose gallery currently owns the middle of the screen. */
+function useActiveGallery() {
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sections = GALLERIES.map((g) => document.getElementById(g.id)).filter(
+      (el): el is HTMLElement => el !== null,
+    );
+    if (!sections.length) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 1] },
+    );
+
+    sections.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, []);
+
+  return active;
+}
+
 export default function Portfolio() {
   // Frame indices run continuously across the galleries, so no two frames on
   // the page carry the same slot number.
   let slot = 0;
+
+  const active = useActiveGallery();
 
   return (
     <main>
@@ -92,7 +131,7 @@ export default function Portfolio() {
           style={{ background: "radial-gradient(circle, var(--color-accent), transparent 62%)" }}
         />
 
-        <div className="relative max-w-285 mx-auto px-6 md:px-8 pt-20 pb-14 md:pt-28 md:pb-16">
+        <div className="relative max-w-285 mx-auto px-6 md:px-8 pt-14 pb-8 md:pt-24 md:pb-12">
           <Reveal>
             <div className="flex items-center gap-3">
               <span aria-hidden className="w-6 h-px bg-(--accent)" />
@@ -106,6 +145,42 @@ export default function Portfolio() {
             <p className="mt-6 text-base md:text-lg text-(--text-secondary) max-w-[44ch] leading-relaxed">
               Selected films. Press play.
             </p>
+
+            {/* Jump to a gallery. Anchors rather than buttons, so they can be
+                opened in a new tab and read as navigation, but the click is
+                handled so the scroll goes through Lenis — a native jump gets
+                overridden by its loop on the next frame. */}
+            <nav aria-label="Jump to a section" className="mt-9">
+              <ul className="-mx-1 flex flex-wrap gap-2">
+                {GALLERIES.map((g) => {
+                  const current = active === g.id;
+                  return (
+                    <li key={g.id}>
+                      <a
+                        href={`#${g.id}`}
+                        aria-current={current ? "true" : undefined}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          scrollToTarget(`#${g.id}`);
+                        }}
+                        className={`cursor-hover-target u-meta inline-flex items-center gap-2 rounded-full border px-4 py-2.5 transition-[background-color,border-color,color] duration-300 ${
+                          current
+                            ? "border-(--accent) bg-(--accent) text-(--accent-text)"
+                            : "border-(--hairline-strong) text-(--text-secondary) hover:border-(--accent) hover:text-(--accent)"
+                        }`}
+                      >
+                        {g.label}
+                        <span
+                          className={current ? "opacity-80" : "text-(--text-secondary) opacity-70"}
+                        >
+                          {pad(g.films.filter((f) => f.id).length)}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
           </Reveal>
         </div>
       </section>
@@ -114,7 +189,12 @@ export default function Portfolio() {
         const live = g.films.filter((f) => f.id).length;
 
         return (
-          <section key={g.label} className="py-14 md:py-20 border-b border-(--border)">
+          <section
+            key={g.id}
+            id={g.id}
+            // Clears the sticky header when a jump button lands here.
+            className="scroll-mt-24 border-b border-(--border) py-10 md:py-16"
+          >
             <ScrollStage>
               <div className="max-w-285 mx-auto px-6 md:px-8">
                 <div className="flex flex-wrap items-end justify-between gap-4 mb-8">

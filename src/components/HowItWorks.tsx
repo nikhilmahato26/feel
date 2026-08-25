@@ -56,7 +56,7 @@ export default function HowItWorks() {
   const scaleX = useTransform(fill, (v) => (reduce ? 1 : v));
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
+    <section id="how-it-works" className="py-14 md:py-24 bg-(--bg-alt) border-b border-(--border)">
       <ScrollStage>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <SectionHeader
@@ -65,7 +65,7 @@ export default function HowItWorks() {
           title="Who we are? What we solve? What you get?"
           lede="Three short films, in order. Watch them back to back and you have the whole picture."
           align="center"
-          className="mb-16 md:mb-20"
+          className="mb-10 md:mb-14"
         />
 
         {/* Process rule: fills with scroll, with a tick above each chapter. */}

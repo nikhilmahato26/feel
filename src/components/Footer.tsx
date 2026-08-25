@@ -66,7 +66,7 @@ function CopyEmail() {
 
 export default function Footer() {
   return (
-    <footer className="pt-20 pb-10">
+    <footer className="pt-14 pb-8">
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <div className="grid gap-12 md:grid-cols-12 pb-16">
           <div className="md:col-span-6">

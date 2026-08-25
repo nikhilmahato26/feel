@@ -34,7 +34,7 @@ export default function About() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative py-24 md:py-32 border-b border-(--border)"
+      className="relative py-14 md:py-24 border-b border-(--border)"
     >
       {/* A pane of accent light behind the figures, set far back. */}
       <span

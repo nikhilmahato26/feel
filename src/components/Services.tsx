@@ -102,7 +102,7 @@ const services: Service[] = [
 
 export default function Services() {
   return (
-    <section id="services" className="py-24 md:py-32 bg-(--bg-alt) border-b border-(--border)">
+    <section id="services" className="py-14 md:py-24 bg-(--bg-alt) border-b border-(--border)">
       <ScrollStage>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <SectionHeader
@@ -110,7 +110,7 @@ export default function Services() {
           label="Services"
           title="One integrated marketing system."
           lede="Five disciplines, one team, one thread running through all of them."
-          className="mb-16 md:mb-20"
+          className="mb-10 md:mb-14"
         />
 
         <RevealGroup

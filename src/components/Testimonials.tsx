@@ -8,7 +8,7 @@ import ScrollStage from "./ScrollStage";
 
 export default function Testimonials() {
   return (
-    <section id="testimonials" className="py-24 md:py-32 border-b border-(--border)">
+    <section id="testimonials" className="py-14 md:py-24 border-b border-(--border)">
       <ScrollStage>
       <div className="max-w-285 mx-auto px-6 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-14 md:mb-16">
