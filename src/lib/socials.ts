@@ -1,4 +1,4 @@
-import { InstagramLogo, LinkedinLogo, YoutubeLogo, XLogo } from "@phosphor-icons/react";
+import { InstagramLogo, LinkedinLogo } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 
 export interface Social {
@@ -13,11 +13,9 @@ export interface Social {
  * Single source for the social accounts — the hero, the footer and the mobile
  * menu all read from here.
  *
- * Instagram and LinkedIn are the confirmed accounts.
- *
- * TODO: the YouTube channel and the X account are still guesses built from the
- * Instagram handle. Send the real URLs and replace them here; nothing else
- * needs touching.
+ * Instagram and LinkedIn only: the YouTube and X entries were guesses built
+ * from the Instagram handle and have been pulled. Add an entry here when a
+ * confirmed URL exists and every surface picks it up.
  */
 export const SOCIALS: Social[] = [
   {
@@ -31,17 +29,5 @@ export const SOCIALS: Social[] = [
     label: "LinkedIn",
     handle: "Feelz Films",
     href: "https://www.linkedin.com/company/feelz-films-production-house-private-limited/",
-  },
-  {
-    Icon: YoutubeLogo,
-    label: "YouTube",
-    handle: "@feelz_films",
-    href: "https://www.youtube.com/@feelz_films",
-  },
-  {
-    Icon: XLogo,
-    label: "X",
-    handle: "@feelz_films",
-    href: "https://x.com/feelz_films",
   },
 ];

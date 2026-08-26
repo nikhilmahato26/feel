@@ -71,6 +71,9 @@ export default function CustomCursor() {
 
   return (
     <>
+      {/* Both parts are white on purpose: the blend mode in index.css turns
+          white into "invert whatever is behind me". A coloured cursor would
+          blend to an arbitrary third colour instead. */}
       <motion.div
         className="cursor-dot"
         style={{
@@ -80,7 +83,7 @@ export default function CustomCursor() {
           translateY: "-50%",
           width: 6,
           height: 6,
-          background: "var(--accent)",
+          background: "#fff",
         }}
       />
       <motion.div
@@ -94,10 +97,15 @@ export default function CustomCursor() {
           borderWidth: 1.5,
         }}
         animate={{
-          width: hovering ? 54 : 32,
-          height: hovering ? 54 : 32,
-          backgroundColor: hovering ? "var(--accent-soft)" : "rgba(0,0,0,0)",
-          borderColor: hovering ? "rgba(0,0,0,0)" : "var(--accent)",
+          // 44 rather than the old 54: even inverted, a smaller disc leaves
+          // more of the label it's sitting on legible.
+          width: hovering ? 44 : 32,
+          height: hovering ? 44 : 32,
+          // Held in white with only alpha moving, so the fade doesn't pass
+          // through grey — which under `difference` would read as a dirty
+          // flicker rather than a clean fill.
+          backgroundColor: hovering ? "rgba(255,255,255,1)" : "rgba(255,255,255,0)",
+          borderColor: hovering ? "rgba(255,255,255,0)" : "rgba(255,255,255,1)",
         }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         initial={false}

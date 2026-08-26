@@ -13,6 +13,7 @@ import { RevealGroup, RevealItem } from "./Reveal";
 import SectionHeader from "./SectionHeader";
 import MagneticButton from "./MagneticButton";
 import ScrollStage from "./ScrollStage";
+import { mailto } from "../lib/contact";
 
 /**
  * TODO: the brochure PDF isn't in the repo yet. Drop it at
@@ -24,8 +25,7 @@ import ScrollStage from "./ScrollStage";
  * until the file exists.
  */
 const BROCHURE = "";
-const BROCHURE_FALLBACK =
-  "mailto:connect@feelzfilms.com?subject=Company%20brochure%20%2B%20case%20studies";
+const BROCHURE_FALLBACK = mailto("Company brochure + case studies");
 
 interface Service {
   k: string;

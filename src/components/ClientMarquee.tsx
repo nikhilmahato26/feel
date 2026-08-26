@@ -14,23 +14,35 @@ interface Client {
   name: string;
 }
 
+/**
+ * Ordered so no two neighbours share a background. Three of these tiles are
+ * white or near-white and three are blue; left in supplied order they paired up
+ * and read as one wide tile with two logos floating in it. The sequence below
+ * alternates light, blue and coloured, and it holds across the loop seam too —
+ * the last tile sits next to the first once it wraps.
+ */
 const CLIENTS: Client[] = [
-  { slug: "unacademy", name: "Unacademy" },
-  { slug: "mamaearth", name: "Mamaearth" },
-  { slug: "unicef", name: "UNICEF" },
-  { slug: "enable", name: "Enable" },
-  { slug: "college-vidya", name: "College Vidya" },
-  { slug: "smartscale360", name: "SmartScale360" },
-  { slug: "fobet-media", name: "Fobet Media" },
-  { slug: "bailey-group", name: "The Bailey Group" },
-  { slug: "topaz-consulting", name: "Topaz Consulting Services" },
-  { slug: "oechsli", name: "Oechsli" },
+  { slug: "unacademy", name: "Unacademy" }, // white
+  { slug: "college-vidya", name: "College Vidya" }, // blue
+  { slug: "mamaearth", name: "Mamaearth" }, // white
+  { slug: "topaz-consulting", name: "Topaz Consulting Services" }, // navy
+  { slug: "enable", name: "Enable" }, // near-white
+  { slug: "oechsli", name: "Oechsli" }, // red
+  { slug: "unicef", name: "UNICEF" }, // cyan
+  { slug: "bailey-group", name: "The Bailey Group" }, // orange
+  { slug: "smartscale360", name: "SmartScale360" }, // blue
+  { slug: "fobet-media", name: "Fobet Media" }, // mauve
 ];
 
 /**
- * Exactly two runs of the list: the marquee keyframe travels -50%, so at the
- * end of a cycle the second run sits precisely where the first began and the
- * loop has no seam.
+ * Exactly two runs of the list. The keyframe travels -50%, so at the end of a
+ * cycle the second run has to sit precisely where the first began.
+ *
+ * That only holds if every item carries its own trailing gap. With a flex
+ * `gap`, the track is 20 items plus 19 gaps, so half of it lands half a gap
+ * short of one full run and the strip visibly jumps every cycle — which is the
+ * loop "ending". The spacing is padding on each item instead, making the track
+ * exactly two identical halves.
  */
 const TRACK = [...CLIENTS, ...CLIENTS];
 
@@ -56,9 +68,11 @@ export default function ClientMarquee() {
             "linear-gradient(to right, transparent, #000 6%, #000 94%, transparent)",
         }}
       >
-        <ul className="marquee-left flex w-max items-start gap-6 md:gap-8">
+        {/* Each item's width includes its trailing gap, so the tile itself is
+            72px on mobile and 80px from md up. */}
+        <ul className="marquee-left flex w-max items-start">
           {TRACK.map((c, i) => (
-            <li key={`${c.slug}-${i}`} className="w-[4.5rem] shrink-0 md:w-20">
+            <li key={`${c.slug}-${i}`} className="w-24 shrink-0 pr-6 md:w-28 md:pr-8">
               <div className="aspect-square overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--surface) shadow-[var(--shadow-sm)]">
                 <img
                   src={`/clients/tile/${c.slug}.jpg`}

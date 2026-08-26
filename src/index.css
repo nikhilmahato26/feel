@@ -30,7 +30,7 @@
   --orb: #ffffff;
   --shadow-sm: 0 2px 10px -4px rgba(15, 26, 51, 0.1);
   --shadow-md: 0 20px 44px -16px rgba(15, 26, 51, 0.2);
-  --shadow-glow: 0 0 24px -2px rgba(42, 86, 232, 0.55);
+
 
   --glass-bg: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(255, 255, 255, 0.8);
@@ -43,7 +43,7 @@
   --surface-sunken: #f5f7fb;
   --grain-opacity: 0.028;
   --map-arc: #2a56e8;
-  --cursor-shadow: 0 4px 14px -3px rgba(15, 26, 51, 0.3);
+
 }
 
 [data-theme="dark"] {
@@ -62,7 +62,7 @@
   --orb: #5b7ff0;
   --shadow-sm: 0 2px 10px -4px rgba(0, 0, 0, 0.55);
   --shadow-md: 0 24px 52px -18px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 32px -2px rgba(91, 127, 240, 0.65);
+
 
   --glass-bg: rgba(20, 20, 20, 0.6);
   --glass-border: rgba(255, 255, 255, 0.1);
@@ -76,7 +76,7 @@
   /* The flat accent disappears against near-black; the lighter tone in the
      existing palette keeps the arcs legible without introducing a new hue. */
   --map-arc: #5b7ff0;
-  --cursor-shadow: 0 4px 18px -3px rgba(0, 0, 0, 0.75);
+
 }
 
 /* ---------------------------------------------------------------
@@ -404,14 +404,18 @@ html {
   z-index: 9999;
   opacity: 0;
   transition: opacity 0.3s var(--ease-out-premium);
-}
 
-/* Lift the cursor off the page so it reads over both light and dark panels. */
-.cursor-dot {
-  box-shadow: var(--shadow-glow);
-}
-.cursor-ring {
-  box-shadow: var(--cursor-shadow);
+  /* The cursor inverts what's under it rather than sitting on top of it, so a
+     word behind the ring is still readable — as its own negative. The filled
+     hover state was otherwise a disc parked over the label you were about to
+     click.
+
+     This is also why the elements are white and why they no longer carry a
+     shadow: `difference` against white gives black, against black gives white,
+     and against the accent gives its complement. Contrast on any background is
+     guaranteed by the arithmetic, which is the job the two box-shadows used to
+     be doing by hand. */
+  mix-blend-mode: difference;
 }
 html.cursor-active .cursor-dot,
 html.cursor-active .cursor-ring {

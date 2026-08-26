@@ -14,11 +14,28 @@ import { ArrowUpRight } from "@phosphor-icons/react";
 import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
 import { LOGO_RATIO, logoMaskStyle } from "../lib/brand";
+import { BOOKING_URL } from "../lib/contact";
 import { SOCIALS } from "../lib/socials";
 
 /** Copies of the mask stacked in Z, and the gap between them, in px. */
 const MARK_LAYERS = 14;
 const LAYER_GAP = 2.6;
+
+/**
+ * Stop list for the plate-to-page fade, shared by both axes. Alpha eases in and
+ * out instead of running straight, which is what keeps the two ends of the
+ * gradient from banding.
+ */
+const PLATE_FADE = [
+  "transparent 0%",
+  "color-mix(in srgb, var(--bg) 6%, transparent) 18%",
+  "color-mix(in srgb, var(--bg) 20%, transparent) 34%",
+  "color-mix(in srgb, var(--bg) 44%, transparent) 50%",
+  "color-mix(in srgb, var(--bg) 68%, transparent) 64%",
+  "color-mix(in srgb, var(--bg) 86%, transparent) 76%",
+  "color-mix(in srgb, var(--bg) 96%, transparent) 88%",
+  "var(--bg) 100%",
+].join(", ");
 
 /**
  * Motes sitting in the air behind the headline, at assorted depths.
@@ -211,25 +228,22 @@ export default function Hero() {
               against the headline: sideways on the split, downward once it
               stacks above the copy.
               
-              Two stops each, and a wide one. A single linear ramp to the page
-              colour leaves a visible band where it starts, because the eye
-              catches the change in gradient slope; easing the alpha in stages
-              spreads that out until the edge stops reading as an edge. */}
+              Six stops tracing an S-curve rather than a straight ramp. A linear
+              fade to the page colour bands twice — once where it leaves
+              transparent and once where it arrives — because the eye reads the
+              change in slope, not the colour. Easing in and out of both ends
+              spreads those transitions until the edge stops being an edge.
+              Mobile gets the longer run of the two, since the plate sits
+              directly above the headline there with nothing between them. */}
           <span
             aria-hidden
             className="pointer-events-none absolute inset-y-0 right-0 z-20 hidden w-44 lg:block xl:w-56"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, color-mix(in srgb, var(--bg) 45%, transparent) 42%, color-mix(in srgb, var(--bg) 88%, transparent) 76%, var(--bg))",
-            }}
+            style={{ background: `linear-gradient(to right, ${PLATE_FADE})` }}
           />
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 lg:hidden"
-            style={{
-              background:
-                "linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 45%, transparent) 42%, color-mix(in srgb, var(--bg) 88%, transparent) 76%, var(--bg))",
-            }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-44 lg:hidden"
+            style={{ background: `linear-gradient(to bottom, ${PLATE_FADE})` }}
           />
         </div>
 
@@ -309,7 +323,7 @@ export default function Hero() {
 
           <motion.div {...rise(0.78)} className="mt-10 flex flex-wrap items-center gap-4">
             <MagneticButton
-              href="mailto:connect@feelzfilms.com?subject=Book%20a%20call"
+              href={BOOKING_URL}
               variant="primary"
               className="gap-2 rounded-full pl-7 pr-5"
             >

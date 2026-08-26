@@ -12,6 +12,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Sun, Moon, Globe, List, X } from "@phosphor-icons/react";
 import MagneticButton from "./MagneticButton";
 import Wordmark from "./Wordmark";
+import { BOOKING_URL } from "../lib/contact";
 import { SOCIALS } from "../lib/socials";
 import type { Theme } from "../lib/useTheme";
 
@@ -173,7 +174,7 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
           </button>
 
           <MagneticButton
-            href="mailto:connect@feelzfilms.com?subject=Book%20a%20call"
+            href={BOOKING_URL}
             variant="primary"
             className="hidden sm:inline-flex rounded-full"
           >
@@ -227,7 +228,7 @@ export default function Nav({ theme, onToggleTheme }: NavProps) {
               })}
 
               <MagneticButton
-                href="mailto:connect@feelzfilms.com?subject=Book%20a%20call"
+                href={BOOKING_URL}
                 variant="primary"
                 className="mt-6 w-full rounded-full sm:hidden"
               >

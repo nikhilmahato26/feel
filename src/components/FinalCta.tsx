@@ -3,6 +3,7 @@ import TextReveal from "./TextReveal";
 import MagneticButton from "./MagneticButton";
 import Tilt3D from "./Tilt3D";
 import ScrollStage from "./ScrollStage";
+import { BOOKING_URL } from "../lib/contact";
 
 function CornerTick({ className }: { className: string }) {
   return (
@@ -62,11 +63,7 @@ export default function FinalCta() {
               </p>
 
               <div className="mt-10">
-                <MagneticButton
-                  href="mailto:connect@feelzfilms.com?subject=Book%20a%20call"
-                  variant="inverted"
-                  className="rounded-full"
-                >
+                <MagneticButton href={BOOKING_URL} variant="inverted" className="rounded-full">
                   Book a call
                 </MagneticButton>
               </div>

@@ -71,8 +71,18 @@ export default function MagneticButton({
     );
   }
 
+  // A link off the site opens in its own tab, so a half-filled booking form
+  // never costs someone the page they were reading. mailto: and in-page
+  // anchors stay where they are — handing those to a new tab leaves a blank
+  // one behind.
+  const offSite = href?.startsWith("http");
+
   return (
-    <motion.a href={href} {...shared}>
+    <motion.a
+      href={href}
+      {...(offSite ? { target: "_blank", rel: "noreferrer noopener" } : {})}
+      {...shared}
+    >
       {children}
     </motion.a>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Check, Copy } from "@phosphor-icons/react";
 import Wordmark from "./Wordmark";
+import { EMAIL } from "../lib/contact";
 import { SOCIALS } from "../lib/socials";
 
 interface FooterItem {
@@ -30,7 +31,7 @@ const COLUMNS: Array<{ label: string; items: FooterItem[] }> = [
   },
 ];
 
-const EMAIL = "connect@feelzfilms.com";
+
 
 function CopyEmail() {
   const [copied, setCopied] = useState(false);
