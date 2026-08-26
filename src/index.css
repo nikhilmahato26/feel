@@ -301,33 +301,6 @@ html {
   background: var(--accent);
 }
 
-@keyframes marquee-left {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-@keyframes marquee-right {
-  from {
-    transform: translateX(-50%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-.marquee-left {
-  animation: marquee-left 46s linear infinite;
-}
-.marquee-right {
-  animation: marquee-right 46s linear infinite;
-}
-.marquee-track:hover .marquee-left,
-.marquee-track:hover .marquee-right {
-  animation-play-state: paused;
-}
-
 /* The hero floor, drifting toward the viewer so the depth reads as space
    rather than as a static backdrop. One tile of travel keeps it seamless. */
 @keyframes grid-drift {
@@ -356,8 +329,6 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-left,
-  .marquee-right,
   .orb-float,
   .grid-drift {
     animation: none !important;
